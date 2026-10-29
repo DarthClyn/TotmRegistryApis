@@ -1,0 +1,667 @@
+{
+  "contractName": "IssuerRegistryV2",
+  "compiler": "solc 0.8.24+commit.e11b9ed9.Emscripten.clang",
+  "evmVersion": "shanghai",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        }
+      ],
+      "name": "AlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "bic",
+          "type": "string"
+        }
+      ],
+      "name": "BicTaken",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "InvalidInput",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotPendingOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        }
+      ],
+      "name": "NotRegistered",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "bic",
+          "type": "string"
+        }
+      ],
+      "name": "IssuerAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        }
+      ],
+      "name": "IssuerRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum IssuerRegistryV2.Status",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "name": "IssuerStatusChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "bic",
+          "type": "string"
+        }
+      ],
+      "name": "IssuerUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "acceptOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "did",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "role",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "bic",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "signingKey",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "allowedDocs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validFrom",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validUntil",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct IssuerRegistryV2.IssuerInput",
+          "name": "x",
+          "type": "tuple"
+        }
+      ],
+      "name": "addIssuer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        }
+      ],
+      "name": "getIssuer",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "did",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "role",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "bic",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "signingKey",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "allowedDocs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "enum IssuerRegistryV2.Status",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validFrom",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validUntil",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "updatedAt",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct IssuerRegistryV2.Issuer",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "bic",
+          "type": "string"
+        }
+      ],
+      "name": "getIssuerByBic",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "did",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "role",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "bic",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "signingKey",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "allowedDocs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "enum IssuerRegistryV2.Status",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validFrom",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validUntil",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "updatedAt",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct IssuerRegistryV2.Issuer",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "docType",
+          "type": "string"
+        }
+      ],
+      "name": "isTrusted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "issuerAt",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "did",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "role",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "bic",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "signingKey",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "allowedDocs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "enum IssuerRegistryV2.Status",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validFrom",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validUntil",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "updatedAt",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct IssuerRegistryV2.Issuer",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "issuerCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        }
+      ],
+      "name": "keyOf",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        }
+      ],
+      "name": "removeIssuer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "did",
+          "type": "string"
+        },
+        {
+          "internalType": "enum IssuerRegistryV2.Status",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "name": "setStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "did",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "role",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "bic",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "signingKey",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "allowedDocs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validFrom",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "validUntil",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct IssuerRegistryV2.IssuerInput",
+          "name": "x",
+          "type": "tuple"
+        }
+      ],
+      "name": "updateIssuer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080806040523461004e575f80546001600160a01b031916339081178255907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08180a36118cb90816100538239f35b5f80fdfe60406080815260049081361015610014575f80fd5b5f3560e01c80631badd26e14610bf15780631dcc7dfa14610b205780636ab3144614610ac257806376baabff146108b757806379ba50971461083d57806380793ab8146106c35780638da5cb5b1461069c578063b4d7b98b1461067e578063c57c8cdb14610635578063deaab7a91461049f578063e30c397814610477578063e742e4b1146102de578063f2fde38b146102645763f4222012146100b6575f80fd5b34610260576100c436610f16565b5f549091906001600160a01b03163303610251576100e1826114a3565b91825f52600260205260ff6006835f200154168481101561023e5761020c57825f526002602052815f209061012061011982806110f1565b9084611394565b6006606082019261013c61013485856110f1565b9088846115c9565b61014683826116c5565b01805460ff19166001179055600354600160401b8110156101f9579084957f4164eb980229d275b2d8a18c7d01fd66adbbd94b9feed93f273292b3a0c6e04f956101b261019c8560016101f49701600355611180565b819391549060031b91821b915f19901b19161790565b905560035490875f52602052845f20556101cc81806110f1565b9490936101e76101df60208501856110f1565b9290946110f1565b9390925196879687611143565b0390a2005b604186634e487b7160e01b5f525260245ffd5b61023a60209261021d8387946110f1565b90915194859463029e8f5f60e21b86528501526024840191611123565b0390fd5b602185634e487b7160e01b5f525260245ffd5b516330cd747160e01b81529050fd5b5f80fd5b50346102605760203660031901126102605781356001600160a01b038181169391849003610260575f5416918233036102d1575050600180546001600160a01b031916831790557f38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e227005f80a3005b516330cd747160e01b8152fd5b50346102605760209081600319360112610260576102fa610f99565b506103058335611180565b90549060031b1c5f5260028252805f209181519261032284610f48565b8251610339816103328185611060565b0382610f78565b84526001918351610351816103328160018701611060565b818601528351610368816103328160028701611060565b84860152835161037f816103328160038701611060565b6060860152835161039681610332818a8701611060565b6080860152600582019283546001600160401b0394858211610464578651936103c4818460051b0186610f78565b8285525f9182528082208186015b848410610442575050505050509060069160a0860152015460ff81168581101561042f5761042b955060c0850152818160081c1660e0850152818160481c1661010085015260881c166101208301525191829182610df1565b0390f35b602186634e487b7160e01b5f525260245ffd5b858381928c51610456816103328189611060565b8152019201930192906103d2565b604189634e487b7160e01b5f525260245ffd5b5034610260575f3660031901126102605760015490516001600160a01b039091168152602090f35b50346102605780600319360112610260576001600160401b03908235828111610260576104cf9036908501610d65565b9190936024359080821015610260575f546001600160a01b031633036106275781156105e357610500368588610fe3565b6020815191012094855f5260026020526006845f20019182549060ff8216818110156105d057156105ac575078ffffffffffffffff00000000000000000000000000000000ff191660ff8416174290911660881b67ffffffffffffffff60881b1617905592937f6046d735f8a3423e1a2efff0d61d8cde092de77412103f5fe09eb4c1ffa767ae93906101f4906105a1908451958587968752860191611123565b916020840190610dd0565b855163ecce6c1360e01b81526020918101919091528061023a60248201898c611123565b602182634e487b7160e01b5f525260245ffd5b606490602084519163d647364f60e01b8352820152601a60248201527f7573652072656d6f766549737375657220746f2064656c6574650000000000006044820152fd5b82516330cd747160e01b8152fd5b5034610260576020366003190112610260578135916001600160401b0383116102605761066a61067191602094369101610d65565b3691610fe3565b8281519101209051908152f35b5034610260575f366003190112610260576020906003549051908152f35b5034610260575f366003190112610260575f5490516001600160a01b039091168152602090f35b50346102605760209081600319360112610260576001600160401b038335818111610260576106f86107089136908701610d65565b610700610f99565b503691610fe3565b8381519101205f5260028352815f2082519361072385610f48565b8351610733816103328186611060565b85526001845161074a816103328160018801611060565b828701528451610761816103328160028801611060565b858701528451610778816103328160038801611060565b6060870152845161078f81610332818b8801611060565b608087015260058301805490858211610464578651936107b4818460051b0186610f78565b8285525f9182528082208186015b84841061081b575050505050509060069160a0860152015460ff81168581101561042f5761042b955060c0850152818160081c1660e0850152818160481c1661010085015260881c166101208301525191829182610df1565b858381928c5161082f816103328189611060565b8152019201930192906107c2565b509034610260575f366003190112610260576001546001600160a01b039290919083831633036108aa5750505f5491339083167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e05f80a36001600160a01b031991821633175f5516600155005b51630614e5c760e21b8152fd5b5034610260576020806003193601126102605782356001600160401b038111610260576108e79036908501610d65565b5f54909291906001600160a01b03163303610ab257610907368483610fe3565b82815191012093845f52858352805f20548015610a8f57855f526002845260039061033261093e83855f2001855192838092611060565b8581519182610a7a575b505082545f19929150828101908111610a675761096490611180565b905490841b1c828201828111610a545761098161019c8392611180565b90555f52888652835f205581548015610a41576101f4949392610a247ff43d2a3ea9545747340b9b72628db98bfe1d404394cf5b9cf2f458b778f01f40999a845f9560069501906109d182611180565b9091825491871b1b1916905583558b8552808952848681205560028952610a1d868620936109fe85611314565b610a0a60018601611314565b610a1660028601611314565b8401611314565b8201611314565b610a306005820161135d565b015551938385948552840191611123565b603189634e487b7160e01b5f525260245ffd5b60118b634e487b7160e01b5f525260245ffd5b60118a634e487b7160e01b5f525260245ffd5b01205f52600585525f838120555f8581610948565b5085918461023a925194859463ecce6c1360e01b86528501526024840191611123565b505050516330cd747160e01b8152fd5b50346102605780600319360112610260576001600160401b0391803583811161026057610af29036908301610d65565b9060243594851161026057610b0f610b1793602096369101610d65565b9290916111de565b90519015158152f35b50903461026057610b3036610f16565b5f549092906001600160a01b031633036102d157610b4d836114a3565b91825f526002602052815f209060ff600683015416818110156105d05715610bc357506101f484610bb98160607f373495d9f93eefd2798bb9ec16b3cad606dee442c2437f9c1426171c5f73600a97980194610bb4610bac87846110f1565b908b846115c9565b6116c5565b6101cc81806110f1565b60209061023a84610bd488806110f1565b90915194859463ecce6c1360e01b86528501526024840191611123565b50346102605760209081600319360112610260576001600160401b038335818111610260576106f8610c269136908701610d65565b8381519101205f5260058352815f20545f5260028352815f20825193610c4b85610f48565b8351610c5b816103328186611060565b855260018451610c72816103328160018801611060565b828701528451610c89816103328160028801611060565b858701528451610ca0816103328160038801611060565b60608701528451610cb781610332818b8801611060565b60808701526005830180549085821161046457865193610cdc818460051b0186610f78565b8285525f9182528082208186015b848410610d43575050505050509060069160a0860152015460ff81168581101561042f5761042b955060c0850152818160081c1660e0850152818160481c1661010085015260881c166101208301525191829182610df1565b858381928c51610d57816103328189611060565b815201920193019290610cea565b9181601f84011215610260578235916001600160401b038311610260576020838186019501011161026057565b91908251928382525f5b848110610dbc575050825f602080949584010152601f8019910116010190565b602081830181015184830182015201610d9c565b906004821015610ddd5752565b634e487b7160e01b5f52602160045260245ffd5b602091828252805190610e11610140928386860152610160850190610d92565b610e71610e5d610e49610e358886015194601f1995868a83030160408b0152610d92565b6040860151858983030160608a0152610d92565b606085015184888303016080890152610d92565b6080840151838783030160a0880152610d92565b60a083015195828683030160c087015286519182815281810182808560051b8401019901945f925b858410610ee85750505050505050610eb960c082015160e0850190610dd0565b60e0810151906101006001600160401b0380931681860152810151908261012092168286015201511691015290565b909192939495998580610f05838e87876001970301895251610d92565b9c0194019401929594939190610e99565b6003199060208183011261026057600435916001600160401b0383116102605782610100920301126102605760040190565b61014081019081106001600160401b03821117610f6457604052565b634e487b7160e01b5f52604160045260245ffd5b90601f801991011681019081106001600160401b03821117610f6457604052565b60405190610fa682610f48565b5f610120836060808252806020830152806040830152808083015280608083015260a08201528260c08201528260e0820152826101008201520152565b9291926001600160401b038211610f64576040519161100c601f8201601f191660200184610f78565b829481845281830111610260578281602093845f960137010152565b90600182811c92168015611056575b602083101461104257565b634e487b7160e01b5f52602260045260245ffd5b91607f1691611037565b80545f939261106e82611028565b918282526020936001916001811690815f146110d25750600114611094575b5050505050565b90939495505f92919252835f2092845f945b8386106110be57505050500101905f8080808061108d565b8054858701830152940193859082016110a6565b60ff19168685015250505090151560051b010191505f8080808061108d565b903590601e198136030182121561026057018035906001600160401b0382116102605760200191813603831361026057565b908060209392818452848401375f828201840152601f01601f1916010190565b9492909361116161117d979561116f94606089526060890191611123565b918683036020880152611123565b926040818503910152611123565b90565b6003548110156111b55760035f527fc2575a0e9e593c00f959f8c92f12db2869c3395a3b0502d05e2516446f71f85b01905f90565b634e487b7160e01b5f52603260045260245ffd5b80548210156111b5575f5260205f2001905f90565b6111e9913691610fe3565b9182516020809401205f52600260205260409260405f209360068501549460ff8616956004871015610ddd5760018097036112f3576001600160401b0390818160081c1680151590816112e9575b506112dd5760481c1680151590816112d3575b506112c9576005019283549485156112bd57611267913691610fe3565b60208151910120925f5b85811061128357505050505050505f90565b80856103326112a26112968b95876111c9565b50875192838092611060565b868151910120146112b35701611271565b5050505050505090565b50505050505050600190565b5050505050505f90565b905042115f61124a565b50505050505050505f90565b905042105f611237565b505050505050505f90565b818110611309575050565b5f81556001016112fe565b61131e8154611028565b9081611328575050565b81601f5f931160011461133a5750555b565b908083918252611359601f60208420940160051c8401600185016112fe565b5555565b8054905f81558161136c575050565b5f5260205f20908101905b818110611382575050565b8061138e600192611314565b01611377565b9092916001600160401b038111610f64576113af8254611028565b601f8111611454575b505f601f82116001146113f057819293945f926113e5575b50508160011b915f199060031b1c1916179055565b013590505f806113d0565b601f19821694835f5260209160205f20925f905b88821061143c57505083600195969710611423575b505050811b019055565b01355f19600384901b60f8161c191690555f8080611419565b80600184968294958701358155019501920190611404565b61147f90835f5260205f20601f840160051c81019160208510611485575b601f0160051c01906112fe565b5f6113b8565b9091508190611472565b356001600160401b03811681036102605790565b60076114af82806110f1565b90501061159d576114c360208201826110f1565b9050156115715760e081016001600160401b03806114e08361148f565b161515918261154d575b50506115075761066a816114fd926110f1565b6020815191012090565b60405163d647364f60e01b815260206004820152601b60248201527f76616c6964556e74696c206265666f72652076616c696446726f6d00000000006044820152606490fd5b61155891925061148f565b908061156660c0850161148f565b169116105f806114ea565b606460405163d647364f60e01b81526020600482015260046024820152636e616d6560e01b6044820152fd5b60405163d647364f60e01b8152602060048201526003602482015262191a5960ea1b6044820152606490fd5b90926115d6368285610fe3565b926003845160208096012093016115ed8154611028565b611656575b50811561108d57825f526005845260405f205485811515918261164b575b5050611626575050906005915f525260405f2055565b604051630a77c18b60e41b81526004810185905291829161023a916024840191611123565b14159050855f611610565b6116696103329160405192838092611060565b848151910120838114611688575f52600584525f60408120555f6115f2565b505050505050565b903590601e198136030182121561026057018035906001600160401b03821161026057602001918160051b3603831361026057565b9061173692916116e86116db60208401846110f1565b6001929160018501611394565b6117026116f860408501856110f1565b9060028501611394565b61171c61171260608501856110f1565b9060038501611394565b61172960808401846110f1565b6004969160048501611394565b6005808301906117458261135d565b5f835b6117e4575b50505050611338929350600661176560c0840161148f565b91019168ffffffffffffffff0070ffffffffffffffff00000000000000000061179260e08654940161148f565b60481b169260081b169070ffffffffffffffffffffffffffffffff001916171781556001600160401b0342168154906001600160401b0360881b9060881b16906001600160401b0360881b1916179055565b60a086016117f28188611690565b905082101561188f576118059087611690565b82101561187c5761181b9082841b8101906110f1565b908454600160401b81101561186957808761183992018755866111c9565b61185757869594939192869361184e92611394565b01909192611748565b5f8b634e487b7160e01b82525260245ffd5b60418b634e487b7160e01b5f525260245ffd5b603289634e487b7160e01b5f525260245ffd5b5061174d56fea2646970667358221220dd6552898300fd559b6873f97e6c2974709dec704fb8ef4b8097c31b81047ade64736f6c63430008180033"
+}

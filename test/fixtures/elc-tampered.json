@@ -1,0 +1,160 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/security/data-integrity/v2",
+    "https://trustvc.io/context/attachments-context.json",
+    {
+      "@version": 1.1,
+      "@protected": true,
+      "LetterOfCredit": {
+        "@id": "urn:orchestration-layer:elc#LetterOfCredit",
+        "@context": {
+          "@protected": true,
+          "lcNumber": {
+            "@id": "urn:orchestration-layer:elc#lcNumber"
+          },
+          "formOfCredit": {
+            "@id": "urn:orchestration-layer:elc#formOfCredit"
+          },
+          "dateOfIssue": {
+            "@id": "urn:orchestration-layer:elc#dateOfIssue"
+          },
+          "applicableRules": {
+            "@id": "urn:orchestration-layer:elc#applicableRules"
+          },
+          "expiryDate": {
+            "@id": "urn:orchestration-layer:elc#expiryDate"
+          },
+          "expiryPlace": {
+            "@id": "urn:orchestration-layer:elc#expiryPlace"
+          },
+          "applicantName": {
+            "@id": "urn:orchestration-layer:elc#applicantName"
+          },
+          "applicantAddress": {
+            "@id": "urn:orchestration-layer:elc#applicantAddress"
+          },
+          "beneficiaryName": {
+            "@id": "urn:orchestration-layer:elc#beneficiaryName"
+          },
+          "beneficiaryAddress": {
+            "@id": "urn:orchestration-layer:elc#beneficiaryAddress"
+          },
+          "issuingBankName": {
+            "@id": "urn:orchestration-layer:elc#issuingBankName"
+          },
+          "advisingBankName": {
+            "@id": "urn:orchestration-layer:elc#advisingBankName"
+          },
+          "currency": {
+            "@id": "urn:orchestration-layer:elc#currency"
+          },
+          "amount": {
+            "@id": "urn:orchestration-layer:elc#amount"
+          },
+          "amountTolerance": {
+            "@id": "urn:orchestration-layer:elc#amountTolerance"
+          },
+          "availableWith": {
+            "@id": "urn:orchestration-layer:elc#availableWith"
+          },
+          "availableBy": {
+            "@id": "urn:orchestration-layer:elc#availableBy"
+          },
+          "partialShipments": {
+            "@id": "urn:orchestration-layer:elc#partialShipments"
+          },
+          "transhipment": {
+            "@id": "urn:orchestration-layer:elc#transhipment"
+          },
+          "portOfLoading": {
+            "@id": "urn:orchestration-layer:elc#portOfLoading"
+          },
+          "portOfDischarge": {
+            "@id": "urn:orchestration-layer:elc#portOfDischarge"
+          },
+          "latestShipmentDate": {
+            "@id": "urn:orchestration-layer:elc#latestShipmentDate"
+          },
+          "goodsDescription": {
+            "@id": "urn:orchestration-layer:elc#goodsDescription"
+          },
+          "documentsRequired": {
+            "@id": "urn:orchestration-layer:elc#documentsRequired"
+          },
+          "additionalConditions": {
+            "@id": "urn:orchestration-layer:elc#additionalConditions"
+          },
+          "presentationPeriod": {
+            "@id": "urn:orchestration-layer:elc#presentationPeriod"
+          },
+          "confirmationInstructions": {
+            "@id": "urn:orchestration-layer:elc#confirmationInstructions"
+          },
+          "chargesClause": {
+            "@id": "urn:orchestration-layer:elc#chargesClause"
+          }
+        }
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:key:zDnaeYW5NSMq64vZAjwCxn11FXohzSkr81vU4QVXKukYYErGM",
+  "validFrom": "2026-10-01T00:00:00Z",
+  "validUntil": "2026-12-31T23:59:59Z",
+  "credentialSubject": {
+    "type": [
+      "LetterOfCredit"
+    ],
+    "lcNumber": "LC-2026-000512",
+    "formOfCredit": "Irrevocable",
+    "dateOfIssue": "2026-10-01",
+    "applicableRules": "UCP 600 with eUCP Version 2.0",
+    "expiryDate": "2026-12-31",
+    "expiryPlace": "Counters of the advising bank",
+    "applicantName": "Demo Importer Ltd.",
+    "applicantAddress": "1 Demo Harbour Road, #05-01, Demo City",
+    "beneficiaryName": "Demo Exporter Co., Ltd.",
+    "beneficiaryAddress": "12 Demo Industrial Park, Lot B3, Demo City",
+    "issuingBankName": "Demo Issuing Bank",
+    "advisingBankName": "Demo Advising Bank",
+    "currency": "USD",
+    "amount": "925000.00",
+    "amountTolerance": "5/5",
+    "availableWith": "Demo Advising Bank",
+    "availableBy": "Payment at sight",
+    "partialShipments": "Not allowed",
+    "transhipment": "Not allowed",
+    "portOfLoading": "Demo Port of Loading",
+    "portOfDischarge": "Demo Port of Discharge",
+    "latestShipmentDate": "2026-11-30",
+    "goodsDescription": "Three-phase electric motors, motor control units and spare parts, shipment CONS-88421, CIF",
+    "documentsRequired": [
+      "Electronic Bill of Lading made out to order of Demo Issuing Bank (TradeTrust, transferable)",
+      "Commercial Invoice INV-2026-000317 (TradeTrust)",
+      "Certificate of Origin COO-2026-000123 (TradeTrust)"
+    ],
+    "additionalConditions": "All documents must reference shipment CONS-88421. Test document only, no legal effect.",
+    "presentationPeriod": "21 days after shipment date, within the credit validity",
+    "confirmationInstructions": "Without",
+    "chargesClause": "All charges outside the issuing bank are for the beneficiary",
+    "attachments": [
+      {
+        "filename": "LC-2026-000512.pdf",
+        "mimeType": "application/pdf",
+        "data": "JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgKG9wZW5zb3VyY2UpCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiAzIDAgUiAvRjMgNCAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL0Jhc2VGb250IC9IZWx2ZXRpY2EgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL05hbWUgL0YxIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udAo+PgplbmRvYmoKMyAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYS1Cb2xkIC9FbmNvZGluZyAvV2luQW5zaUVuY29kaW5nIC9OYW1lIC9GMiAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0Jhc2VGb250IC9Db3VyaWVyLUJvbGQgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL05hbWUgL0YzIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udAo+PgplbmRvYmoKNSAwIG9iago8PAovQ29udGVudHMgOSAwIFIgL01lZGlhQm94IFsgMCAwIDU5NS4yNzU2IDg0MS44ODk4IF0gL1BhcmVudCA4IDAgUiAvUmVzb3VyY2VzIDw8Ci9FeHRHU3RhdGUgPDwKL2dSTHMwIDw8Ci9jYSAuMDgKPj4KPj4gL0ZvbnQgMSAwIFIgL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0KPj4gL1JvdGF0ZSAwIC9UcmFucyA8PAoKPj4gCiAgL1R5cGUgL1BhZ2UKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL1BhZ2VNb2RlIC9Vc2VOb25lIC9QYWdlcyA4IDAgUiAvVHlwZSAvQ2F0YWxvZwo+PgplbmRvYmoKNyAwIG9iago8PAovQXV0aG9yIChEZW1vIElzc3VpbmcgQmFuaykgL0NyZWF0aW9uRGF0ZSAoRDoyMDI2MTAwNjE2MjE1NCswMCcwMCcpIC9DcmVhdG9yIChcKHVuc3BlY2lmaWVkXCkpIC9LZXl3b3JkcyAoKSAvTW9kRGF0ZSAoRDoyMDI2MTAwNjE2MjE1NCswMCcwMCcpIC9Qcm9kdWNlciAoUmVwb3J0TGFiIFBERiBMaWJyYXJ5IC0gXChvcGVuc291cmNlXCkpIAogIC9TdWJqZWN0IChcKHVuc3BlY2lmaWVkXCkpIC9UaXRsZSAoRWxlY3Ryb25pYyBMZXR0ZXIgb2YgQ3JlZGl0IExDLTIwMjYtMDAwNTEyKSAvVHJhcHBlZCAvRmFsc2UKPj4KZW5kb2JqCjggMCBvYmoKPDwKL0NvdW50IDEgL0tpZHMgWyA1IDAgUiBdIC9UeXBlIC9QYWdlcwo+PgplbmRvYmoKOSAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAyOTIwCj4+CnN0cmVhbQpHYXVgVkQwKUkxJkg4OC5UcF5AJDQjU0lDcFEoPypDWWQpWUJ1NC9SMVxaUz9maG1bRC1aSDZhcEtcKVhuSSZHLz5haWpUInBvSkdCWFJhKDhkJlN0OCg/R0wmdHU/K0lKPz5FVGRaOVFATW9wZ0RVPE5GbmEvWk46dWwkO2ltUSkiX20+SWtqZl9ja0hyck1kQS9IbVJcNHE/W19nVThzRDpfJ0A+XmUyLVc6KFhibCRDRkZmXkxLOSNPdFtyZmRKXFFbVihzU0hrMlAsMTpWY0FkLF0qQnE6IyJSbjF0Rk43X3BgVXIjX2JFIk0lRGBZPlE0TyhtYURiIVs7SlJDcl9rXGVjYVhEXnNtSGsnOUhdYVFENFJHWVY2RVZAWVNMWmw0cC46J1ZeTz4mZilXK1pXU3AvS1s4Ij1ZX1hTYyVxPlxGY2BISUZLbUFLIUpvXEA5VjZmaC1xQjJCJ0UxSzRrSyctUmY/Xk9ePl44P25TIjRpZE9YM0FoNTgyNTdBKGg0THNqPT5AXE89XFFfOFNKZ1AlVCY9X1FuPy9sWjIjQFJnciQhLVhMZkBPbGFWXCkvUVxcRm0vaj9OIVoqYF1DMnNXXy1Dbix1QDI7V1VmXyRlWis5TjJKKiJzW1VbZztOdFlhKyRRITdHMjBYXjo4Nj0nZjNPMHRecT9jQGVUMSR1IzM7YFRzT25LR19ZdVNQayhcMHVQbnIuPl9IZW4waEJiJG03bitLR29ILG1obmBLVVpTZUFZZ1Boc1leJmUpMU5YJVwmc3M3J2swJUopWF5TNls2TmRvUy5KNGJZXi1UJGs+Ii1KSChrOmxdVmAjMzMyJiIibGZUdEpxO2ckTlswcXNELFRPJikjIkpTbG1rblFxRjEuQ2JzLU9ZIzItTkJgJC9ULVRDKFM0V05RKkdgRT5gQCgjWlQoOVMwJVJAVi9RZ0VtSCRnLjohMkshRkluISs8STo0PltCYGAmLWBsWyFHYz5vciQqVWM2QWkpdSZyW3NTVlBgOD1bZiVqMDtkI1VJak5Vbj1xVChiRz5SMWZUZzdrUFEtRSI4QG11Z3E1YVw/Qm1mSkJVb29rKUQwRVw7QWNgazV0K28oInRsMzRcUl9BJmAyNTRgb3JjS2FOdFlANCplNStIXC9ARlJdYFdGTDpWJ200XUFoaUM+WzdgZFZhSFkpbDpFU2s5SiJuXVNpOigxU1IyJDY9NDNxWjlqb2U2UnQzRjtjTig0Xj9Vak10bmxTPkNWbUc/cSVwcj5sI11na2FTZShkL1pVO1EwWzo1Lz5KRTlzQTtVKGU8WHNudGc5MW4mKkRhP0QpbylVY3JNRmNKYiRrWCx0LCJRcj9jPio4cjRkY002UE5APTUuLFYsYidlOyQkU2VxaXIpSiokWmlIUjdHOl9WQT1MXGtFMVdKNEVzQmROOlouW0RqTFEvaiYlWURQdVs2cEtcIyM1MCU3TV4lNElPZjhvWS0oUlVARDFQajBUQytEXmslLlZmPmEqWVhqaUlQNy1zODNxUW9HT3EjPGBQXzUvSm4zaih1O1dEZUdTNzEtUS5oOWlNV2dLM3NyLGJVJ2VaJTtsRihMWXMzZFlUcHFNQWpRPWAnQScuNVhibDxRbHRFZWFcUVlPcFhDSVFlYGpVTnA2WXRYTG00Kl9FYyVtX2M3YmswTkxJbS8iRUIkbipiZE8lP2gzYFB0QUJDX1JCSXE3TT9uRjZ1PV8oVzRuZ0MqazghTmlqcnI0UjZEKC0ydENYXCJcJVxGNy9cRU1tUTM+XlJRMyFZJnFVI2UyLFg2VVRjV15dTzVTVS4nQi9mUE9wWHUzNkZaQjtYTk1IWmRkL2ZTZkQiZnBESWhYOzJtVyc/Jz5bYD9QRlxDUnE5amlFPnU9ZCYwRT9xSFlzIXNkRmk4V2BVZmpAUilhLUMvYTxIM2dEIk8pNl5GNUJVZElPPmJXNDhUJkdzWkhQdV0lIj1mX11pRlJcMS1FWDlnUEQhTCNRTS86JTs5T09IQUYoIWdyVmAhSEZyTUpJITgway9IQiJeJipAU0EwW0gyYGhWcl5RNjBDcz9PczAzdFpUM2ZyKSIyTDEkPF48PmFlUFRRLXJtYyY3PFJlJjpjdFJpSktFNW4pUEVfLCVGZilnMWxaZTsqOlkiTyJuJHExZyZDNlhXKEg4PCktOEB0RiRBWEMpPCY2O1xbX1dfMURmKiQpIWskKGglXGgyQlYiNzpMRz9ATmBCVl4kYy1fZzA0dDY9P2hxXFVDbVBfZjVjN1RpLmY0PzMiRywpYV5lZExeQCpZaEwxMWtZWTVDSyI9Z0hTYnFNYk9xcEdJQytYa0hodWg3JWcrNjlpayIwN1kzIW1LNTVLQnFxKTFMNWdCZWRIKSw1JD09NDxYUW41bCpvb19TJ0QtR0BpSFFzUGdgRjFgOT8scjxXa2R0ZUgwXDFPO1xZMT9wJWQmYXEzPyQ3VFdJPnQxVElRQ09rWCgqQmVCNDw0UitVXz8lNlsiJHBiZ1ZyOTBVXy9ObllGMk5oWXBwX2ZRPk9jKUlXPCs6Ml1DMy5XbVdYNmdoSiJhKlpzNExJPnAuPGk6aHRrNilQLD5ocT8+bGNvZzFFayZNaEZmY0JBQy1AVV9PL2JRV2xpP1dsOkM9KV5fVi5TVDhXQm1sRipNIVQhbVpgR08yIkVYJXNIKGgoYGklQjBQOTBXRSZ1Y2VBSU9CWGdpZm1wSmkkKTA+bmY4Jz8rN1ZzX0RrPCpaYCIlOFk3S04lMkdbYjhZMUs8OyQ2VEU6Q3BDQ0JxSVtRXktpSUsrcEFoNGk7OVEodWxHNnBRJiE1bmMpIks6dWFKWTBmK01BcDhQVWJJWTpuXU5gQml1UDhSN0VQZk4tSTctJWBMYmVhRTNNbiFwN1RyLTJRVmFRRExxTG82LyxzI2tWXlo1MixCJGtrZzlFSCkmQj5JVT9Yb2JMVSdfXiIrYl4vPVFzW2IybidbNWVLWTo4MGM5SmwmTjc7X0JITSxaWEBVWkg0RGE+M1Y6PShCVVMiXmE5S1UyVWhgT1NkTVQpIlNuRGQ/LSFRKT1FU3NXYSVCQCg4MV8yRlddNnRaRlNqaGBeYTdQYUNkJjNOOCpsSVg5JStFclVJVDsiZnBcJGdiTkYnJUtnOigtTydGaC1iQDxGckAsI1thXDpfQltRMXBVOyJTKl9USWpKYjA8WFVgUD8+UzgybFtEQDs9WCJEWUg1LHRtb2ZbRkBMOVltYV8pdXN1KU0uVmQuI0g1YzBtZll1XiNfLSciZDZgZCUjaGVYPVM3NUgxUTgiL0hDKnRtQkdUODcxVFwnP01MKFg0W0ZZOnVMVkJSTThFJlItVT5eaHNWMTFHZjpCRERQaFAlO2srT0BmI3BUPTZbVEM3b1JYPlZcJHRtIWJEOVVqVTIvb18ocSNLWWV1ZVdrWVY2WmpCTWE4Lj1YLltMI1dPSmhNP01HJmdadEo1R2ppJFtzTVllQ2lnRlEjMlBVTHMqaj8rRyxZLF4yJCx0bz9ZK1ciY3M+SzkycT5LJyFNUiVMLlEiYWJpdDdXP3UtPDFEXVlsT2tORHMwayN0QWEjQUdhWFNeNV49MVZxTkdib3M8byJOdD5UOjxxVUBUO1dudWxXdGEnY2ZNbDAyLDA4ISU5LEsrRjBeM202QDkpTCpqb28rb2xVKyRBKWpOPmRsNjtEUjwsVzRGK0FMNVM5cmdrOCVmdF1xJUdGZTVQbnFAViFlKyRcL0Q/Y1cuLiJjIWksQlc3NlskWllhJzI2P2Rhc1ttQSdjR2pBaT9JZyRtTSZFTXVaNCluRzI0RVNTUmY0OSY3N2QsVWsuWHBuWENsSSFbQXJGMGkuKDBoUFpyITE6T1BqU34+ZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgMTAKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDYxIDAwMDAwIG4gCjAwMDAwMDAxMTIgMDAwMDAgbiAKMDAwMDAwMDIxOSAwMDAwMCBuIAowMDAwMDAwMzMxIDAwMDAwIG4gCjAwMDAwMDA0NDEgMDAwMDAgbiAKMDAwMDAwMDY4MiAwMDAwMCBuIAowMDAwMDAwNzUwIDAwMDAwIG4gCjAwMDAwMDEwNjMgMDAwMDAgbiAKMDAwMDAwMTEyMiAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9JRCAKWzw4MzAyYjBjNjYwMGIyZWUzMDViYjI5MWFhZTQ3Mjk5ND48ODMwMmIwYzY2MDBiMmVlMzA1YmIyOTFhYWU0NzI5OTQ+XQolIFJlcG9ydExhYiBnZW5lcmF0ZWQgUERGIGRvY3VtZW50IC0tIGRpZ2VzdCAob3BlbnNvdXJjZSkKCi9JbmZvIDcgMCBSCi9Sb290IDYgMCBSCi9TaXplIDEwCj4+CnN0YXJ0eHJlZgo0MTMzCiUlRU9GCg=="
+      }
+    ]
+  },
+  "id": "urn:uuid:01a11205-bb3a-722e-8bca-720e7d64d83e",
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-10-06T16:22:07Z",
+    "verificationMethod": "did:key:zDnaeYW5NSMq64vZAjwCxn11FXohzSkr81vU4QVXKukYYErGM#zDnaeYW5NSMq64vZAjwCxn11FXohzSkr81vU4QVXKukYYErGM",
+    "cryptosuite": "ecdsa-sd-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "u2V0AhVhAf2srT4SYIkTkQ-MB8I70aYNyZ-J50VdnmODUKpw3tddR6B5HRtVUFoSH1icjWI84JZKu8nU62YyPjceO9KSI11gjgCQD_Xkhho79FCrAU6tVLEExuLp4-QEnAHUO3-bi8E1otXhYICE2WaotLIzQy5b2cN5qJODYMXuQCvXp4oUmYY5PKN2dmCRYQH9ldMIebu8QiS5m2YCqBM3DbaOT78rMca5akHFr6Mkxq4wCeni28uirG0qmCBdCLN5XgrQFmLrPbMRKR6QOT9BYQI2Z6t2eq2zAxmmvvRNU5s_PR8VQWOFdlsP6eXJ06ppd7JhIOyrkomJ5Aa6fOBZSZ5t2toaTssJ5kc7flpnZ6vRYQFcMKHvtM0unsrqeTWj6NUcOdVRzFacfuX-VCfvOORgR-RyynxscEqGQ953yu5LCeEBBCOlphWR_580jeOLWPlNYQBBZ4XV0DS0qUo0UQb5Rqo2Jfi1oF1rGQHyPwJ8K7_-hGGsTI-snLqPpAd-u4p4ptOcohHk9l7Tfc2Iy7rz2BLpYQD8tsI0wkLFWTnjDcjymHi3ykE0dlUyWDWKK0LkEAL9KXOGzE5onVTKRQ4cfFYE-GOih-rvl1IMyyymOaj6Q5VhYQCeF2LP1qAD2weTav6AfD4TEIODPzSBKojiwwcxBKbj2EPmGwlLJ0EsEbvVt6zpDIvUoTLXT6RvETDOjjrkq8LlYQHEX-GYJX3r006VHSBR56Ic5pDp322tQvcZIMe4WEkr_MJ74nl6wjSnejs3WUlMvKb5rGGwOhfQPOQA3RBS10YpYQIhf2JuYbIYXDeEukTBIXRP10i_AsM6fu_7AlcPe1QoHOWws9ryWMTi82wypyzOQba8T3S-yZwpvpoafqojtAp1YQM7UDE-D_KfOLgCGkSyHMMeEK0_V6UvwPgW86is3uGb12nYZlLrRrVUS6fD3wpakQ_UbNQzKIfnnw9lEkzK6wiNYQG5dLsihuIrGK2EILctVROqNkIbWAEjFDhfKewGHu_DWyVu3dvdkKaxDR47W0mT-N2r1npiLY8qRsMAPhI-fyQFYQNuHd7_xlEAiR_U9xWw64LgZrNdQKVMk5PNZreqvhDFxyJhlILnehzdceusj_7IqJNIFBBtICToTorC-jr_BE45YQCmitEBpanwdSrMj-GULpXnWAld2Oj3JJVDyDLMghJ9SHo_AFLpQ77_6Q_3ggy7vD3FgaJdkvWX_YDnuQeTpPRJYQC4C9A0Wf7bAUucFfdujVKiZv11DqzKVMelFzH1JRGIeV4GcrLl0Y33i89AMZVlvnNdg7dyAWDbS8o9PFh-t8_dYQOr6FZfHcfPVPfFFLjKuGFPhstlzOm841dEGsVHckgCFP1Uxqc_hL9EjYlqqugOoIRKFIoE4ZAInerUDvBEZOPNYQMZMtGwg_1Xn6_DvcmbYnmDTVUFoDD0ZdshkrtAp2o9ngZvJNckD839uhvZs9xOmTMdKrGKzrS1E7BXHVhnlqrRYQMuNy7E6piyBxKtbQNRS7CW0MorFl5e_HZBgg4lETLGDLCcfevCzr-MF6cjKkkKFSodVnm5FHkETmpKEQvjLj8tYQPKG8RhoFqiM887igwlTqzOqIrvUMzMEj41CldS1lsqYj6g-Lk4WY6NeRCtWkKJnI3XGXCApdRGdwekF3y_StIlYQNa9j92577sVkz_GjNa14eM3czKcaF8KXOwa-WypbCg-eZVMoONo1VEV43tBfqu5T_JWJ1ubHdrSj1WIfNtl-oVYQGJyBQ8gtpiz_H94akaaSmu4RvNO7x_GgH1cMthe2SH6wFyvqtnTUh8qvpiymlsTca2FNfn7XSJM-1qzD6CaVPtYQOYWC44pxeA3LCpFqd1NeJje5f8RtxCgJjwR3f_2e8kigJA9XYeBf4_IeRnVl0Sa-tjO5GQulvFpafnyRu3Bl_pYQJfiBuahdgDBmxbCcnCGn8DlOdHXrf_tGUSMoclQ1ry0IBwW94IFUaAjeKKmNvWHHsu-Q_RZQOfeuHpnxU5CnARYQP99nJTDCReBtynhVLr3JQba5BFDu8b-1Pn0nUesqvx4CwS-riIN7Ln9cfiuDnK4zxcc7321zRuzOddVMCHfuopYQEytxNmdhlDbLvS99I5GnCqgLZxBQ-A0qkDS0YXXo-HLNVamKNE3cnRIq1ObMc5eTozwVgQpq0GU0uEVnib_u-RYQFU0XOvUSBRcYSo-AL7UC_lRN2GUaAB4vhta55GigOo2bB21YOn473Wj8APqwDTaZCc18HdVoQyGEt3tYtX7xgxYQF8x8WnK4yJHW-1GjDnfub1cQcsW5trg08eIK462uNoSLs4vTCn7vJhlOHqBj60lokQtGurJOpDwN3SLMPb4QihYQERQC1CL6XoWsrKaImUcX9wHYVgupG-tw-NGbPG8sThBXMBdcH50Ige5VmvHbEFX3rm6SXIChQTrEh5ONkVzQ8hYQGljx0slaCg_kXEydPr6ZIIQuRlfDKh5UmzIaI0vdUH1ewJ4MLSP88lGLwVdSn7nnvpCzpxGOkQyy9wUGITCRzVYQNLTgJFX2Zcqi4J_VVLfAB9CiUQftKMhICuqaN-VAmwbMsVYjTzZeuobOEvlbMTPGyttR_yCqVEe2NH6nZJNIYVYQLJ3pxIeSsYzJhQ9yDs4eUVWwgiuV7_PK8p3jujpz0Tffgk2WWV1G-FQ1ifkgwjzienNlUh5PQtIxvqwmGEi2qRYQBV0pcc_XAa7IBL9P_Dtsh6s4QbSWoIoWi4NiPxdIkL40HNc7QFL_WsSx7OkfxgiBkj6iYEjXRqce_r5WjiF_mBYQOMTOpHIFnL5SZWgOtdUs_Ifw90vpHgNcicEbZ55884dEtHe-bj6gOvQmF1BmQ-4Q8boXIY8ASlRrS2JabcLS4JYQLRX0JXSCI1pa9hHNdo4EkpTvki1da0pUuNdG__9ROf0iHgF9OM_IjWH9ZtbFok299_9cQXVlPkAF50ExyKsd2JYQA8XksaTv1v5z2RwsB1hHnLlcV2UW_ImC4p2hvdEeh4Lb8vaTFSMo1oc_pN2AYPtOx93LFL31IphIXqtqB9Ed55YQJ8yUJ7qSosja13aX14bgMaEu8qT5zCgVDkCOhAhBnxz47D253QWyKRoSePniQz9TXYEmczsfwFvWTyDIKQz3ClYQFSSSpJunINRS7LAloZ5SIEzhuiF_KXae_IJcQBY6jlyvZqrzsaR3_nA1Ibxhw6MqarbdEoeMqN1XmBSwja5zHlYQPNmQHbpUmf0s-pKtJd4khy8ZaYomOZCF495vYsJaY7n0-zujrFHgArbn9NY7ndQ44s95K1oCQEoMQXgRL-o6OCDZy9pc3N1ZXJqL3ZhbGlkRnJvbWsvdmFsaWRVbnRpbA"
+  }
+}

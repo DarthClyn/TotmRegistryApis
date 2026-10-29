@@ -1,0 +1,202 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/security/data-integrity/v2",
+    "https://trustvc.io/context/attachments-context.json",
+    {
+      "@version": 1.1,
+      "@protected": true,
+      "ElectronicLetterOfCredit": {
+        "@id": "urn:orchestration-layer:elc#ElectronicLetterOfCredit"
+      },
+      "LetterOfCredit": {
+        "@id": "urn:orchestration-layer:elc#LetterOfCredit",
+        "@context": {
+          "@protected": true,
+          "sequenceOfTotal": {
+            "@id": "urn:orchestration-layer:elc#sequenceOfTotal"
+          },
+          "formOfCredit": {
+            "@id": "urn:orchestration-layer:elc#formOfCredit"
+          },
+          "lcNumber": {
+            "@id": "urn:orchestration-layer:elc#lcNumber"
+          },
+          "referenceToPreAdvice": {
+            "@id": "urn:orchestration-layer:elc#referenceToPreAdvice"
+          },
+          "dateOfIssue": {
+            "@id": "urn:orchestration-layer:elc#dateOfIssue"
+          },
+          "applicableRules": {
+            "@id": "urn:orchestration-layer:elc#applicableRules"
+          },
+          "expiryDate": {
+            "@id": "urn:orchestration-layer:elc#expiryDate"
+          },
+          "expiryPlace": {
+            "@id": "urn:orchestration-layer:elc#expiryPlace"
+          },
+          "issuingBankName": {
+            "@id": "urn:orchestration-layer:elc#issuingBankName"
+          },
+          "applicantBank": {
+            "@id": "urn:orchestration-layer:elc#applicantBank"
+          },
+          "applicantName": {
+            "@id": "urn:orchestration-layer:elc#applicantName"
+          },
+          "applicantAddress": {
+            "@id": "urn:orchestration-layer:elc#applicantAddress"
+          },
+          "beneficiaryName": {
+            "@id": "urn:orchestration-layer:elc#beneficiaryName"
+          },
+          "beneficiaryAddress": {
+            "@id": "urn:orchestration-layer:elc#beneficiaryAddress"
+          },
+          "currency": {
+            "@id": "urn:orchestration-layer:elc#currency"
+          },
+          "amount": {
+            "@id": "urn:orchestration-layer:elc#amount"
+          },
+          "amountTolerance": {
+            "@id": "urn:orchestration-layer:elc#amountTolerance"
+          },
+          "additionalAmountsCovered": {
+            "@id": "urn:orchestration-layer:elc#additionalAmountsCovered"
+          },
+          "availableWith": {
+            "@id": "urn:orchestration-layer:elc#availableWith"
+          },
+          "availableBy": {
+            "@id": "urn:orchestration-layer:elc#availableBy"
+          },
+          "draftsAt": {
+            "@id": "urn:orchestration-layer:elc#draftsAt"
+          },
+          "drawee": {
+            "@id": "urn:orchestration-layer:elc#drawee"
+          },
+          "mixedPaymentDetails": {
+            "@id": "urn:orchestration-layer:elc#mixedPaymentDetails"
+          },
+          "negotiationDeferredPaymentDetails": {
+            "@id": "urn:orchestration-layer:elc#negotiationDeferredPaymentDetails"
+          },
+          "partialShipments": {
+            "@id": "urn:orchestration-layer:elc#partialShipments"
+          },
+          "transhipment": {
+            "@id": "urn:orchestration-layer:elc#transhipment"
+          },
+          "placeOfTakingInCharge": {
+            "@id": "urn:orchestration-layer:elc#placeOfTakingInCharge"
+          },
+          "portOfLoading": {
+            "@id": "urn:orchestration-layer:elc#portOfLoading"
+          },
+          "portOfDischarge": {
+            "@id": "urn:orchestration-layer:elc#portOfDischarge"
+          },
+          "placeOfFinalDestination": {
+            "@id": "urn:orchestration-layer:elc#placeOfFinalDestination"
+          },
+          "latestShipmentDate": {
+            "@id": "urn:orchestration-layer:elc#latestShipmentDate"
+          },
+          "shipmentPeriod": {
+            "@id": "urn:orchestration-layer:elc#shipmentPeriod"
+          },
+          "goodsDescription": {
+            "@id": "urn:orchestration-layer:elc#goodsDescription"
+          },
+          "documentsRequired": {
+            "@id": "urn:orchestration-layer:elc#documentsRequired"
+          },
+          "additionalConditions": {
+            "@id": "urn:orchestration-layer:elc#additionalConditions"
+          },
+          "chargesClause": {
+            "@id": "urn:orchestration-layer:elc#chargesClause"
+          },
+          "presentationPeriod": {
+            "@id": "urn:orchestration-layer:elc#presentationPeriod"
+          },
+          "confirmationInstructions": {
+            "@id": "urn:orchestration-layer:elc#confirmationInstructions"
+          },
+          "specialPaymentConditionsBeneficiary": {
+            "@id": "urn:orchestration-layer:elc#specialPaymentConditionsBeneficiary"
+          },
+          "specialPaymentConditionsReceivingBank": {
+            "@id": "urn:orchestration-layer:elc#specialPaymentConditionsReceivingBank"
+          },
+          "reimbursingBank": {
+            "@id": "urn:orchestration-layer:elc#reimbursingBank"
+          },
+          "instructionsToBank": {
+            "@id": "urn:orchestration-layer:elc#instructionsToBank"
+          },
+          "advisingBankName": {
+            "@id": "urn:orchestration-layer:elc#advisingBankName"
+          },
+          "senderToReceiverInfo": {
+            "@id": "urn:orchestration-layer:elc#senderToReceiverInfo"
+          },
+          "requestedConfirmationParty": {
+            "@id": "urn:orchestration-layer:elc#requestedConfirmationParty"
+          }
+        }
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "ElectronicLetterOfCredit"
+  ],
+  "issuer": "did:key:zDnaekwEcNdmV6q5jW3LeDZYZokZhAr214p9aGxeotQuVM2Vm",
+  "validFrom": "2026-10-28T22:18:01Z",
+  "validUntil": "2027-01-31T23:59:59Z",
+  "credentialSubject": {
+    "type": [
+      "LetterOfCredit"
+    ],
+    "lcNumber": "LC-2026-10-0471",
+    "formOfCredit": "IRREVOCABLE",
+    "dateOfIssue": "2026-10-29",
+    "applicableRules": "UCP LATEST VERSION",
+    "expiryDate": "2027-01-31",
+    "expiryPlace": "Ho Chi Minh City",
+    "issuingBankName": "Bank Alpha ID",
+    "applicantName": "Nusantara Foods PT",
+    "applicantAddress": "Jl. Sudirman 10, Jakarta",
+    "beneficiaryName": "Mekong Rice Export JSC",
+    "beneficiaryAddress": "12 Nguyen Hue, Ho Chi Minh City",
+    "currency": "USD",
+    "amount": "312000.00",
+    "availableWith": "Bank Beta VN",
+    "availableBy": "BY NEGOTIATION",
+    "portOfLoading": "Ho Chi Minh City",
+    "portOfDischarge": "Tanjung Priok, Jakarta",
+    "latestShipmentDate": "2026-12-15",
+    "goodsDescription": "Jasmine rice, 500 MT, CIF Jakarta",
+    "documentsRequired": [
+      "Commercial invoice",
+      "Bill of lading",
+      "Certificate of origin"
+    ],
+    "confirmationInstructions": "WITHOUT",
+    "advisingBankName": "Bank Beta VN"
+  },
+  "id": "urn:uuid:01a18497-77ba-799f-98dd-b34006b65b43",
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-10-28T22:18:01Z",
+    "verificationMethod": "did:key:zDnaekwEcNdmV6q5jW3LeDZYZokZhAr214p9aGxeotQuVM2Vm#zDnaekwEcNdmV6q5jW3LeDZYZokZhAr214p9aGxeotQuVM2Vm",
+    "cryptosuite": "ecdsa-sd-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "u2V0AhVhAP0N018XMxj8gqOourwAVf6T6Noua_3AhvILabRsyoSpvBofbMI3ttdaJ0ZqgAPPOPcsQlLuX6tdcxHfMbenC9VgjgCQDw0ghxgudsMbutOB8QT1aBNGSpjJI5xP6UjRpMmbwgw9YIEjT9D0xbi1YdqRgCvCo3497V4ygFKTfEnAfQdQOk_9kmBpYQJ1o4ZYorD3xaBZnMol-iiTcxFfqCQtbrHmEnG1fxSvysEL5sPm6Mjqe3VmeqSO4WguDoz3L545O_nGQC_bJpXBYQD5y4Y6TGlScx3i343-QbC6YXXp0fq2K0HM2iXXcRaE_kk42J-1EZWEExNc5d1l8SGesxnW4CSaYXa1GVbxqOVJYQE464-abIJBzLt_SCbEU5laIEGhObZCl60IHyhaEJZzkHAqFTTZ1sz-AP4_t-mUXtZoIB403r1KHcD4hFeNQIF5YQNLFSj83nhDFHNLEyBLKAXVa8i6SW8Dgml4HGRsZyuTWivoHAG0SSF7Vdh-BeR_R-dvZbzRcelENe3JbbPWH5lFYQD_ErtZRf3c2IeWb_TWASk9WEKzWUrCsIoguSwu6qn33ARON7cFcJL9cy9n3ULbmJiHcgcSWqtdFKtYzglPDDLtYQBtl_pDDCdhNAbbfO8F8cWtiV-fUznp7O9yn8QuZ1ou2oKGU9xEE3vkwjlkiSlWnHplbGusCa6nbZ0sjWawrPRJYQJQGy2KF7YIoIqTB7tamKLaIfyHoqGXsrouVXPSlSwBx5J1-C7vZNyLUhnrUF40w_aW9cCpYeV8aZsf1Xtyv0NtYQDl51Y3CpYObDus2oJ2BwEhOf260PqiFHUY8VPMzgNwxoRbQM8Y17XLdKUKUZAzNMAS1AV54offIkEu3Dg3l-CFYQNZTfka6483Ij_BywTw_Qswu5ek9ELZkjS41meURCQNPBPaDafmGq3yQpmZbE4_XSyPMgbULDj68C8h_YwiRL1lYQOGLh32YWBwTsrxdyifSYl1JdCjHAqOhgzDuAJH8Mqs5Bz7zG6N8dv0ybzv_dxE9sRbPpYa7Hr6Gbr0O4dB0QMhYQKGQT-ocBrNmqjMnAEqBbk3GdmEDX7zbiq25DPLJg7T5a2buAGosEAbscQqXNU_o5azdo6s73L6HGGN1zputo4tYQG06iXIdt44xvaIFytt1ob0pT0YclQCPSxbsTHdriE8fAaWdGMxW0r1vK93hh0Am6t2oPYf6SvsM1x7dMJ4UVlpYQN4bPyso3PfeNm8k3i1gHXUtk2NwHlmZtzGigprscKqKid5hAHbUq5qahM67Z2Tp88QfN68a44F8DU1OBskAS0ZYQA79iS-dzlInBDkx8jg075b4BQqWnpgXtUixkFDvOMJHRqEEqPMFSCrkm8Sb3szI0ysPrvSChWaBVgj4U-8zNmJYQHC8GtJiwJBE_i1nlrL4a6y6SHHziUuXgwCuE_N78YM6QQWyRwvM1Wf0iDOJCyFUzK-tyvFvS21zsUUOfHpPypZYQA7ruYIkkLBBV46EaqzBzg5l-pLwNTZ2c-EknrLqm0snUqKVMjQqRkhPyYWYeIxtH1IHBWOVxCPxCSSXlXFBB7RYQE1RnMvs8lSHVJwSFXNeSNWdKaiIYNWgIGJy97atfb6Xf3KVGpwF2ZY-xXFljIbpq5E_u5lSBDyZGhmP-9--4bdYQJGa7ZzK0OgNYgtaQO1r7vuNdtV5DPNPmx-K331FF_XIcQ8oinoeifImp559mvWiDCc0XA7u_T3ALgAajJU4UF5YQLQP85XtrfkUqLiX0ea9kBFTKys7gKB-quikYLnnS3jhAAtvEyGpqIcv-5O-3j4It7r7TWs0FStklHNzvZsnnoVYQMxGpprz9Fct9_KAl6iTYB0T4gGhajlVHYVZ8k-kqgU2oCvRwMABAIP_1Oqo_83YhW6I4NX9U0z--we4pP88GeRYQO-PLmz9geg7ShAd_nhVD8tAFJqaWNNGWIhsIAZov5HbBX5eI2l2dGVUEis00oj96qa76awG44lrv25XSfP7KBlYQO4_F8qTE69Io3sUda6VrG_-whhZr9cyI9R5i7GhmyDjYK-LZ1a-Jp8CEb_Fmu5OSQAJYHXNlIKIN70r_4bZKqpYQBo2SUQpX40nO8F-Dneoq0fuaYB6RYyfmO0xX7FqcbghUGI00Fd1kZYDm47CJf1PJ77Taj1cTgG1TAMY9zZrxzNYQD0GHwtwq4jDheHD8ZS7iFfYxt6fLPalIucVKyGPX6mzw-Jff_NL6qAub_wEwQOIZ6tMXO7pipiMdXRFl4ntGNNYQEcjz4AUES_-4C1ztZ4qnzp2vpjmup16zJZNfEY4Xao9NfXOOqQyULfQAUlvQOe8rjcfefBuBlLoOnQGq9__HDJYQGs-Af0flaWdFxV0HcLSh_L7SPEafrwiZvrmJIHfOFJQVSaGyHVUdnq73q59NS5mhybUrp3NsoejHSrYEdLiQR-DZy9pc3N1ZXJqL3ZhbGlkRnJvbWsvdmFsaWRVbnRpbA"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "totm-trust-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TOTM Trust API: issuer registry lookups, eLC status and content verification for partner platforms (PILA). eLC PoC.",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch-path=./src src/index.js",
+    "start": "node src/index.js",
+    "test": "node --test \"test/*.test.mjs\"",
+    "keygen": "node scripts/keygen.mjs",
+    "contract:build": "node scripts/contract-build.mjs",
+    "contract:deploy": "node --env-file-if-exists=.env scripts/contract-deploy.mjs",
+    "registry": "node --env-file-if-exists=.env scripts/registry.mjs",
+    "elc": "node --env-file-if-exists=.env scripts/elc.mjs",
+    "bank-key": "node scripts/bank-key.mjs",
+    "partner": "node --env-file-if-exists=.env scripts/partner.mjs"
+  },
+  "dependencies": {
+    "@trustvc/trustvc": "2.15.4",
+    "@trustvc/w3c-issuer": "2.3.0",
+    "dotenv": "^16.6.1",
+    "ethers": "^6.17.0",
+    "fastify": "^5.12.5"
+  },
+  "devDependencies": {
+    "ganache": "7.9.2",
+    "solc": "0.8.24"
+  }
+}
