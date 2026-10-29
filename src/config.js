@@ -14,7 +14,7 @@ function parsePartners(raw) {
 }
 
 export function loadConfig(env = process.env) {
-  const hosted = !!env.VERCEL;
+  const hosted = !!(env.VERCEL || env.RAILWAY_ENVIRONMENT || env.RENDER);
   const chainId = Number(env.REGISTRY_CHAIN_ID || 11155111);
   const registry = env.REGISTRY_ADDRESS
     ? contractRegistry({ rpc: rpcUrl(env, chainId), chainId, address: env.REGISTRY_ADDRESS })

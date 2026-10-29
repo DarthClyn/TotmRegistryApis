@@ -139,7 +139,7 @@ The VC Layer's Issue eLC can later call `POST /api/v1/admin/vcs` directly with t
 contract/src/IssuerRegistryV2.sol      registry contract (owner writes, anyone reads)
 contract/artifacts/                    compiled ABI + bytecode (committed)
 deployments/<chainId>.json             deployed address (public)
-src/app.js                             routes, key checks, response format, audit
+src/api.js                             routes, key checks, response format, audit
 src/registry.js                        on-chain reader (no cache), trust rule
 src/store.js                           eLC status records (Upstash REST / memory), Tx IDs
 src/verify.js                          TrustVC content check

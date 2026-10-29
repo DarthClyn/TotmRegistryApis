@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { buildApp } from '../src/app.js';
+import { buildApp } from '../src/api.js';
 import { memoryRegistry } from '../src/registry.js';
 import { memoryStore } from '../src/store.js';
 import { sha256Hex } from '../src/keys.js';
