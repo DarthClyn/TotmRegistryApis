@@ -11,6 +11,7 @@ export function memoryStore() {
   const partners = new Map();
   const partnerKeys = new Map();
   const otps = new Map();
+  const files = new Map();
   return {
     kind: 'memory',
     async nextTxId() {
@@ -44,6 +45,20 @@ export function memoryStore() {
     async putOtp(hash, rec) { otps.set(hash, rec); },
     async getOtp(hash) { const r = otps.get(hash); return r && Date.parse(r.expiresAt) > Date.now() ? r : null; },
     async deleteOtp(hash) { otps.delete(hash); },
+    // Inbox file records: { fileId, from, to, fileName, contentType, size, sha256, txId, vcId, note, sentBy, sentAt, readAt, expiresAt }.
+    async createFile(rec) { files.set(rec.fileId, rec); },
+    async getFile(id) { const r = files.get(id); return r && Date.parse(r.expiresAt) > Date.now() ? r : null; },
+    async putFile(rec) { if (files.has(rec.fileId)) files.set(rec.fileId, rec); },
+    async deleteFile(id) { return files.delete(id); },
+    // Returns { files, gone }: gone = IDs whose record expired (their bytes can be deleted).
+    async listFiles(box, side, limit = 100) {
+      const now = Date.now();
+      const mine = [...files.values()].filter((r) => (box === 'inbox' ? r.to : r.from) === side);
+      const gone = mine.filter((r) => Date.parse(r.expiresAt) <= now).map((r) => r.fileId);
+      gone.forEach((id) => files.delete(id));
+      const list = mine.filter((r) => !gone.includes(r.fileId)).sort((a, b) => b.sentAt.localeCompare(a.sentAt)).slice(0, limit);
+      return { files: list, gone };
+    },
   };
 }
 
@@ -109,6 +124,35 @@ export function upstashStore({ url, token, prefix = 'tta:' }) {
     },
     async getOtp(hash) { const v = await cmd('GET', k(`otp:${hash}`)); return v ? JSON.parse(v) : null; },
     async deleteOtp(hash) { await cmd('DEL', k(`otp:${hash}`)); },
+    // Inbox: record per file (expires with the file), plus a sorted set per inbox and per sent box (score = sent time).
+    async createFile(rec) {
+      const ttl = Math.max(1, Math.ceil((Date.parse(rec.expiresAt) - Date.now()) / 1000));
+      const t = String(Date.parse(rec.sentAt));
+      await cmd('SET', k(`file:${rec.fileId}`), JSON.stringify(rec), 'EX', String(ttl));
+      await cmd('ZADD', k(`inbox:${rec.to}`), t, rec.fileId);
+      await cmd('ZADD', k(`sent:${rec.from}`), t, rec.fileId);
+    },
+    async getFile(id) { const v = await cmd('GET', k(`file:${id}`)); return v ? JSON.parse(v) : null; },
+    async putFile(rec) { await cmd('SET', k(`file:${rec.fileId}`), JSON.stringify(rec), 'XX', 'KEEPTTL'); },
+    async deleteFile(id) {
+      const rec = await this.getFile(id);
+      if (!rec) return false;
+      await cmd('DEL', k(`file:${id}`));
+      await cmd('ZREM', k(`inbox:${rec.to}`), id);
+      await cmd('ZREM', k(`sent:${rec.from}`), id);
+      return true;
+    },
+    // Returns { files, gone }: gone = IDs older than cutoffMs or whose record expired (their bytes can be deleted).
+    async listFiles(box, side, limit = 100, cutoffMs = 0) {
+      const set = k(`${box}:${side}`);
+      const old = cutoffMs ? (await cmd('ZRANGEBYSCORE', set, '-inf', String(cutoffMs))) ?? [] : [];
+      if (old.length) await cmd('ZREMRANGEBYSCORE', set, '-inf', String(cutoffMs));
+      const ids = (await cmd('ZREVRANGE', set, '0', String(limit - 1))) ?? [];
+      const vals = ids.length ? await cmd('MGET', ...ids.map((id) => k(`file:${id}`))) : [];
+      const missing = ids.filter((_, i) => !vals[i]);
+      if (missing.length) await cmd('ZREM', set, ...missing);
+      return { files: vals.filter(Boolean).map((v) => JSON.parse(v)), gone: [...old, ...missing] };
+    },
   };
 }
 

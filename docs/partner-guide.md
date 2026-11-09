@@ -61,6 +61,11 @@ Base URL: `https://<to be shared>/api/v1`
 | POST | `/vp/verification-context` | X-Api-Key | Issuer trust and eLC status for a list of credentials |
 | POST | `/vc/verify` | X-Api-Key | Integrity and issuer check of a full eLC |
 | GET | `/partners/me` | X-Api-Key | Check your key |
+| POST | `/{pila\|totm}/send` | X-Api-Key | Send a file to the other side's inbox |
+| GET | `/{pila\|totm}/inbox` | X-Api-Key | List files received |
+| GET | `/{pila\|totm}/inbox/{fileId}` | X-Api-Key | Download a received file |
+| POST | `/{pila\|totm}/inbox/{fileId}/ack` | X-Api-Key | Mark a received file as read |
+| GET | `/{pila\|totm}/sent` | X-Api-Key | List files sent, with `readAt` |
 
 ### 3.1 Resolve a DID: `GET /dids/{did}`
 
@@ -142,6 +147,26 @@ your own SDK cannot verify the TradeTrust proof. Nothing from the eLC is stored.
 
 ```json
 { "code": "E00", "message": "Success", "data": { "did": "did:nda:testnet:0x…", "name": "PILA", "type": "verifier" } }
+```
+
+### 3.5 Inbox
+
+To send a file to TOTM, call `POST /pila/send`; it lands in the TOTM inbox. Files TOTM sends you are in `GET /pila/inbox`.
+
+- Body: the raw file bytes. `Content-Type`: `application/json`, `application/pdf`, `image/png` or `image/jpeg`. Max 4 MB.
+- Query: `fileName` (required), `txId`, `vcId`, `note` (optional).
+- Files are kept for 30 days. Download returns the bytes with `X-File-Sha256`.
+- After processing a file, call `POST /pila/inbox/{fileId}/ack` so TOTM sees it arrived.
+
+```bash
+curl -X POST "$BASE/pila/send?fileName=elc.json&vcId=urn:uuid:…" -H "X-Api-Key: $KEY" \
+  -H "Content-Type: application/json" --data-binary @elc.json
+```
+
+```json
+{ "code": "E00", "message": "Success", "data": { "fileId": "…", "from": "pila", "to": "totm", "fileName": "elc.json",
+  "contentType": "application/json", "size": 2048, "sha256": "…", "txId": null, "vcId": "urn:uuid:…", "note": null,
+  "sentBy": "PILA", "sentAt": "…", "readAt": null, "readBy": null, "expiresAt": "…" } }
 ```
 
 ## 4. Test data

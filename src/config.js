@@ -2,6 +2,7 @@
 import { contractRegistry, memoryRegistry, rpcUrl } from './registry.js';
 import { memoryStore, upstashStore } from './store.js';
 import { parseBankKeys } from './elc.js';
+import { memoryFiles, vercelBlobFiles } from './files.js';
 
 function parsePartners(raw) {
   if (!raw) return [];
@@ -25,6 +26,10 @@ export function loadConfig(env = process.env) {
   const token = env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN;
   if (!url && hosted) throw new Error('A status store is required when hosted: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN');
 
+  // Inbox file bytes: Vercel Blob (private store) when connected; memory locally; off (503 on inbox calls) when hosted
+  // without it. The Blob SDK reads BLOB_STORE_ID (+ OIDC on Vercel) or BLOB_READ_WRITE_TOKEN itself.
+  const files = env.BLOB_STORE_ID || env.BLOB_READ_WRITE_TOKEN ? vercelBlobFiles() : hosted ? null : memoryFiles();
+
   return {
     port: Number(env.PORT || 4300),
     registry: registry ?? memoryRegistry([]),
@@ -33,5 +38,7 @@ export function loadConfig(env = process.env) {
     partners: parsePartners(env.PARTNER_API_KEYS),
     adminKeyHash: env.ADMIN_API_KEY_HASH || undefined,
     bankKeys: parseBankKeys(env.BANK_KEYS_JSON),
+    files,
+    inbox: { maxBytes: Number(env.INBOX_MAX_MB || 4) * 1024 * 1024, ttlDays: Number(env.INBOX_TTL_DAYS || 30) },
   };
 }

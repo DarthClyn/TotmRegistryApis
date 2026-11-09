@@ -28,6 +28,12 @@ issuer DID, status and expiry per eLC.
 | GET | `/api/v1/admin/vcs/{vcId}` | `X-Admin-Key` | One eLC record |
 | GET | `/api/v1/admin/tx/{txId}` | `X-Admin-Key` | All eLCs of a Tx ID |
 | POST | `/api/v1/admin/vcs/{vcId}/suspend` | `X-Admin-Key` | Suspend (final, no reactivation) |
+| POST | `/api/v1/{pila\|totm}/send` | either key | **Inbox**: send a file; it lands in the *other* side's inbox |
+| GET | `/api/v1/{pila\|totm}/inbox` | either key | Files this side received (newest first, `?limit=`) |
+| GET | `/api/v1/{pila\|totm}/inbox/{fileId}` | either key | Download a received file (raw bytes, SHA-256 checked) |
+| POST | `/api/v1/{pila\|totm}/inbox/{fileId}/ack` | either key | Mark as read; the sender sees `readAt` |
+| GET | `/api/v1/{pila\|totm}/sent` | either key | Files this side sent, with `readAt` |
+| DELETE | `/api/v1/{pila\|totm}/inbox/{fileId}` | `X-Admin-Key` | Delete a file (record and bytes) |
 
 Responses: `{code: "E00", message: "Success", data}`. Errors: `{code, error}` with `E400` (bad request),
 `E15` (missing / wrong key), `E02` (not found), `E409` (already exists / already suspended), `E500`.
@@ -36,6 +42,30 @@ Responses: `{code: "E00", message: "Success", data}`. Errors: `{code, error}` wi
 Status per eLC: `active`, `suspended`, `expired` (past its `validUntil`), `not_found` (unknown VC ID, or the
 issuer DID / Tx ID given does not match the record). Accept an eLC only when `status` is `active`,
 `isIssuerTrusted` is `true` and `didPublicKey` is not null.
+
+## Inbox
+
+PILA and TOTM send each other files. `POST /api/v1/totm/send` delivers to the PILA inbox, `POST /api/v1/pila/send`
+to the TOTM inbox. Either key (`X-Api-Key` or `X-Admin-Key`) can use both sides; only the admin key can delete.
+
+- Body: the raw file bytes, with `Content-Type` `application/json`, `application/pdf`, `image/png` or `image/jpeg`
+  (the content is checked against the type). Query: `fileName` (required), `txId`, `vcId`, `note` (optional).
+- Limits: `INBOX_MAX_MB` (default 4; Vercel caps request bodies at 4.5 MB) and `INBOX_TTL_DAYS` (default 30).
+- Storage: bytes in a private Vercel Blob store (`inbox/{to}/{fileId}`), records in Upstash Redis (expire with
+  the file). Without Blob the inbox runs in memory locally and answers `503` when hosted. Audit logs carry file ID,
+  sides, size and hash only, never the file name or content.
+
+```bash
+curl -X POST "$URL/api/v1/totm/send?fileName=LC-1.pdf&txId=TX-20261109-000001" \
+  -H "X-Admin-Key: $ADMIN_API_KEY" -H "Content-Type: application/pdf" --data-binary @LC-1.pdf
+curl "$URL/api/v1/pila/inbox" -H "X-Api-Key: $PILA_KEY"
+curl "$URL/api/v1/pila/inbox/<fileId>" -H "X-Api-Key: $PILA_KEY" -o LC-1.pdf
+```
+
+Blob setup (once, no card needed on Hobby): Vercel project > Storage > Create > Blob > set access to **Private** >
+connect it to this project (all environments) > redeploy. The SDK then authenticates on its own (OIDC + `BLOB_STORE_ID`).
+Hobby includes 1 GB storage and 10 GB transfer a month; past that Blob is blocked (not billed) until the 30-day window
+resets. Files expire after `INBOX_TTL_DAYS`; their bytes are deleted from Blob the next time that inbox or sent box is listed.
 
 ## Run locally
 
@@ -145,6 +175,8 @@ src/store.js                           eLC status records (Upstash REST / memory
 src/verify.js                          TrustVC content check
 src/elc.js                             eLC data model (MT700 fields, inline context) and signing
 src/keys.js                            did:key public keys, key hashing
+src/inbox.js                           inbox routes (send, list, download, ack, delete)
+src/files.js                           inbox file bytes (Vercel Blob private / memory)
 scripts/                               build, deploy, registry CLI, keygen, eLC admin client
 test/                                  node:test (API with real TrustVC; contract on ganache)
 ```

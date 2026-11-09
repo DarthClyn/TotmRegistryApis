@@ -1,0 +1,222 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://w3id.org/security/data-integrity/v2",
+    "https://trustvc.io/context/attachments-context.json",
+    {
+      "@version": 1.1,
+      "@protected": true,
+      "ElectronicLetterOfCredit": {
+        "@id": "urn:orchestration-layer:elc#ElectronicLetterOfCredit"
+      },
+      "LetterOfCredit": {
+        "@id": "urn:orchestration-layer:elc#LetterOfCredit",
+        "@context": {
+          "@protected": true,
+          "sequenceOfTotal": {
+            "@id": "urn:orchestration-layer:elc#sequenceOfTotal"
+          },
+          "formOfCredit": {
+            "@id": "urn:orchestration-layer:elc#formOfCredit"
+          },
+          "lcNumber": {
+            "@id": "urn:orchestration-layer:elc#lcNumber"
+          },
+          "referenceToPreAdvice": {
+            "@id": "urn:orchestration-layer:elc#referenceToPreAdvice"
+          },
+          "dateOfIssue": {
+            "@id": "urn:orchestration-layer:elc#dateOfIssue"
+          },
+          "applicableRules": {
+            "@id": "urn:orchestration-layer:elc#applicableRules"
+          },
+          "expiryDate": {
+            "@id": "urn:orchestration-layer:elc#expiryDate"
+          },
+          "expiryPlace": {
+            "@id": "urn:orchestration-layer:elc#expiryPlace"
+          },
+          "issuingBankName": {
+            "@id": "urn:orchestration-layer:elc#issuingBankName"
+          },
+          "applicantBank": {
+            "@id": "urn:orchestration-layer:elc#applicantBank"
+          },
+          "applicantName": {
+            "@id": "urn:orchestration-layer:elc#applicantName"
+          },
+          "applicantAddress": {
+            "@id": "urn:orchestration-layer:elc#applicantAddress"
+          },
+          "beneficiaryName": {
+            "@id": "urn:orchestration-layer:elc#beneficiaryName"
+          },
+          "beneficiaryAddress": {
+            "@id": "urn:orchestration-layer:elc#beneficiaryAddress"
+          },
+          "currency": {
+            "@id": "urn:orchestration-layer:elc#currency"
+          },
+          "amount": {
+            "@id": "urn:orchestration-layer:elc#amount"
+          },
+          "amountTolerance": {
+            "@id": "urn:orchestration-layer:elc#amountTolerance"
+          },
+          "additionalAmountsCovered": {
+            "@id": "urn:orchestration-layer:elc#additionalAmountsCovered"
+          },
+          "availableWith": {
+            "@id": "urn:orchestration-layer:elc#availableWith"
+          },
+          "availableBy": {
+            "@id": "urn:orchestration-layer:elc#availableBy"
+          },
+          "draftsAt": {
+            "@id": "urn:orchestration-layer:elc#draftsAt"
+          },
+          "drawee": {
+            "@id": "urn:orchestration-layer:elc#drawee"
+          },
+          "mixedPaymentDetails": {
+            "@id": "urn:orchestration-layer:elc#mixedPaymentDetails"
+          },
+          "negotiationDeferredPaymentDetails": {
+            "@id": "urn:orchestration-layer:elc#negotiationDeferredPaymentDetails"
+          },
+          "partialShipments": {
+            "@id": "urn:orchestration-layer:elc#partialShipments"
+          },
+          "transhipment": {
+            "@id": "urn:orchestration-layer:elc#transhipment"
+          },
+          "placeOfTakingInCharge": {
+            "@id": "urn:orchestration-layer:elc#placeOfTakingInCharge"
+          },
+          "portOfLoading": {
+            "@id": "urn:orchestration-layer:elc#portOfLoading"
+          },
+          "portOfDischarge": {
+            "@id": "urn:orchestration-layer:elc#portOfDischarge"
+          },
+          "placeOfFinalDestination": {
+            "@id": "urn:orchestration-layer:elc#placeOfFinalDestination"
+          },
+          "latestShipmentDate": {
+            "@id": "urn:orchestration-layer:elc#latestShipmentDate"
+          },
+          "shipmentPeriod": {
+            "@id": "urn:orchestration-layer:elc#shipmentPeriod"
+          },
+          "goodsDescription": {
+            "@id": "urn:orchestration-layer:elc#goodsDescription"
+          },
+          "documentsRequired": {
+            "@id": "urn:orchestration-layer:elc#documentsRequired"
+          },
+          "additionalConditions": {
+            "@id": "urn:orchestration-layer:elc#additionalConditions"
+          },
+          "chargesClause": {
+            "@id": "urn:orchestration-layer:elc#chargesClause"
+          },
+          "presentationPeriod": {
+            "@id": "urn:orchestration-layer:elc#presentationPeriod"
+          },
+          "confirmationInstructions": {
+            "@id": "urn:orchestration-layer:elc#confirmationInstructions"
+          },
+          "specialPaymentConditionsBeneficiary": {
+            "@id": "urn:orchestration-layer:elc#specialPaymentConditionsBeneficiary"
+          },
+          "specialPaymentConditionsReceivingBank": {
+            "@id": "urn:orchestration-layer:elc#specialPaymentConditionsReceivingBank"
+          },
+          "reimbursingBank": {
+            "@id": "urn:orchestration-layer:elc#reimbursingBank"
+          },
+          "instructionsToBank": {
+            "@id": "urn:orchestration-layer:elc#instructionsToBank"
+          },
+          "advisingBankName": {
+            "@id": "urn:orchestration-layer:elc#advisingBankName"
+          },
+          "senderToReceiverInfo": {
+            "@id": "urn:orchestration-layer:elc#senderToReceiverInfo"
+          },
+          "requestedConfirmationParty": {
+            "@id": "urn:orchestration-layer:elc#requestedConfirmationParty"
+          }
+        }
+      }
+    }
+  ],
+  "type": [
+    "VerifiableCredential",
+    "ElectronicLetterOfCredit"
+  ],
+  "issuer": "did:key:zDnaekwEcNdmV6q5jW3LeDZYZokZhAr214p9aGxeotQuVM2Vm",
+  "validFrom": "2026-10-01T00:00:00Z",
+  "validUntil": "2026-12-31T23:59:59Z",
+  "credentialSubject": {
+    "type": [
+      "LetterOfCredit"
+    ],
+    "sequenceOfTotal": "1/1",
+    "formOfCredit": "IRREVOCABLE",
+    "lcNumber": "LC-2026-000512",
+    "referenceToPreAdvice": "PREADV/2026/0941",
+    "dateOfIssue": "2026-10-01",
+    "applicableRules": "EUCP LATEST VERSION",
+    "expiryDate": "2026-12-31",
+    "expiryPlace": "Counters of the advising bank",
+    "issuingBankName": "Demo Issuing Bank",
+    "applicantBank": "Demo Applicant Bank, Demo City",
+    "applicantName": "Demo Importer Ltd.",
+    "applicantAddress": "1 Demo Harbour Road, #05-01, Demo City",
+    "beneficiaryName": "Demo Exporter Co., Ltd.",
+    "beneficiaryAddress": "12 Demo Industrial Park, Lot B3, Demo City",
+    "currency": "USD",
+    "amount": "125000.00",
+    "amountTolerance": "5/5",
+    "additionalAmountsCovered": "Insurance premium up to USD 1,250.00",
+    "availableWith": "Demo Advising Bank",
+    "availableBy": "BY PAYMENT",
+    "draftsAt": "Sight",
+    "drawee": "Demo Issuing Bank",
+    "partialShipments": "NOT ALLOWED",
+    "transhipment": "NOT ALLOWED",
+    "placeOfTakingInCharge": "Demo Factory Warehouse, Demo City",
+    "portOfLoading": "Demo Port of Loading",
+    "portOfDischarge": "Demo Port of Discharge",
+    "placeOfFinalDestination": "Demo Importer Warehouse, Demo City",
+    "latestShipmentDate": "2026-11-30",
+    "shipmentPeriod": "Shipment between 2026-11-01 and 2026-11-30",
+    "goodsDescription": "Three-phase electric motors, motor control units and spare parts, shipment CONS-88421, CIF",
+    "documentsRequired": [
+      "Electronic Bill of Lading made out to order of Demo Issuing Bank (TradeTrust, transferable)",
+      "Commercial Invoice INV-2026-000317 (TradeTrust)",
+      "Certificate of Origin COO-2026-000123 (TradeTrust)"
+    ],
+    "additionalConditions": "All documents must reference shipment CONS-88421. Test document only, no legal effect.",
+    "chargesClause": "All charges outside the issuing bank are for the beneficiary",
+    "presentationPeriod": "21/FROM THE DATE OF SHIPMENT",
+    "confirmationInstructions": "WITHOUT",
+    "specialPaymentConditionsBeneficiary": "None",
+    "specialPaymentConditionsReceivingBank": "None",
+    "reimbursingBank": "Demo Reimbursing Bank",
+    "instructionsToBank": "On receipt of complying documents at our counters we will remit the proceeds as instructed by the presenting bank.",
+    "advisingBankName": "Demo Advising Bank",
+    "senderToReceiverInfo": "Test message only. No legal effect."
+  },
+  "id": "urn:uuid:01a18800-fb4d-7770-92c3-26464010e541",
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2026-10-29T14:12:08Z",
+    "verificationMethod": "did:key:zDnaekwEcNdmV6q5jW3LeDZYZokZhAr214p9aGxeotQuVM2Vm#zDnaekwEcNdmV6q5jW3LeDZYZokZhAr214p9aGxeotQuVM2Vm",
+    "cryptosuite": "ecdsa-sd-2023",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "u2V0AhVhAj1cYQebxhxj1Ht9z3gpVBoNgYrt5x7CIyT9mo5Xu5xy9D64gyxNsNSF6hZ2nxqMZveV5_jj7UAT-8yG2xLXrB1gjgCQDYrR75jh9l1iBs-cs3ZRqZKoeNq8syAGwPrHGrKI988VYIFnLIvnXNjqGsm9-ONBf2X1QjsAWXxM9W7CssW5Q-T7cmC5YQOnd6EVS1y-VbBJ0cybKcJ5-e2uUO5o_Q1Bk2nyseCEedR-wEqSllo7Niw-gKlobgAO1XWXqjKd8eK-CM7KCyRtYQAKbz3_NlSwIrflfegRJ18ZjaQOC2xvSi_w8aPUzEtMhK4R_B0c2U4q49jgXEnpZnKntre35Vxdzv5Khr-uEajxYQDd50el4c-fPhfor-y1Pl6waONP8O4q4AJrure1178qYSsHfC_a1wh1z0tFYaJC0oj9xS84RdzFXi6nWui_OTwdYQEx8gV0dgbk962fVTJw-jTlrzVRc8dlO1m0QMqN3njNIa5ZSd13EHjrcpEGd2920ePZNHMSh3mvMHXQZaoPOkMNYQPAEqbRLN5Z-7XG9TackFHVoIK1ZyOgh7AzkG0eLE0YvbZxLA0F3oQ8C0Sku2BF3LY1SeaVwac-WM2kTk8qjyZZYQOlCSvdDSnREB0fPOVAKhjDNanxl6EiXq5CnUbqD-eUbDMkifjgFR5fSr_5G4CUQVS_0_kRDwrj4Of4GCSg8MS9YQIelbGPA7N7aboywRbmrmb3FARKM0q2GkIfLAcwfHEIzjwlo8N_85Zl4Cuf828_WlIJt6sY7EAu8gOzk15jnBk1YQMDm3QV8a8lIBLHczJg65Wd2m9RjIofK3V9YAhIa1xVWyXC9Suqd6eNIGadrNLA0PSd5W5Rzc_NmpzRq1w1WvotYQMlFodKgfKijhPrpz5tQ0I-qt-Q6To_1TWA_-RvSWrcd2w8N9Tqbpg9U46h9mZvFnX7gDJSJYcfVqg5TVXdXdnJYQA7kiY7gxaNq6XpA9l_nSOQgS1dtCjsiP7RNb7_stmKvtNpUbKxvgirpf5Ms9UefmJW0hh6zPqP8xn7FuOu0BD1YQDuxsi_qKClkDisxbPc0InJ1MToTqNOUFV7rfJJi4Pq5NrHmqK37L2AI47ZzRhM_8KwsVBYwI6AZiqijV6rLY1pYQGGYJ8XSFlHgB6_pKThRIJTnvC6PXqtTdrAQGeckT0cS_EVZJo7kpTgUfepjEtMxHzVqxeK7dNoNMiY7GdTicK5YQHGRYdJOhso6MSU2NM099MCIOrG-ZfTfObl5ItI_Cmw7wNc3_WCJaZhg151VTEBPLQqMIqcp7OQ5oB38qPpgBfxYQDCXiZlRjeVuTXmDDR3RFfpgryzg0pbQUgx0SiAR0D-uvwpcLdCNtyOh4GKPrcdm7Igy_4D1z4LYHKOUTu97mGtYQPfzRT44hh1b3bfa2XjYflFO25mljXsOAgnsf2d5wfy4oLs2BlStqgwy2YfZ4mDvF-m0FQAu07NanNAsDOQnzN1YQOyPQczjjzxJheW1lvZ_uu-6eKWc3An_ahy9FlzYrvBaEOdKZhedOAhSONmXPnspkrSUrf0goIrIpODgcf6hLKBYQHS25uR5tjuf3lZRibnXGUZ9_dFT-X_bAhN8eLCZQ4Qt0ZvZMuNiqlk0N2OrzcPdOhZZy5zjcvr4XmG4JSKJE3VYQFy3kvLTv4KLP32Cej0lbLpIEmlO_w1u3VhR85ALDNwTinMYqzIMeAglIpp975Xi42IT3sG_SvimU5mdnu1JngZYQEFG7Nvi26D2L0Vs9Kh_SxSwcrA1uuOZ-8E0bKRTR_j_GusmyYOFXfJpil9_DjEc0ij1RKr2o2ggBjkvUhLQkoxYQG45pFrOE_reJvnFMcT8Gy1Hv3DHYwn_s4gdM0hitBIr-2j52UDk-UdEAE6ObsHQV_yZcQbLJcMuZHEFIZq093RYQGK4z0FnTRlgBgWVqO_ewmUzTkttevV_-1zoCTuOcKaItDtGRRiOH9jWqZtPeEimmwf1dyBDFJfSRIIpMF4buUVYQBbK4zwUyJeaqPnoR3AYbn7EiF1AR4-K73-L5mvjf2kM0S8IZIftz3CX98pckEEIk5ggaXA59mkxJRi6zmm-Ns9YQFvv-59d0EX8HwRC89tWBXb4MCEqueuHYPzrlGnOBmm-WPcqrPJprUHy0HwhoSpIkk8nbFnpsfC7mQgM-vRPqrlYQHqV6USmChRyhBHq6-UJBzc90k5AHcswR0s2gceM7ejPsjHx2iPPEN75TdB0cMzWT7OOlSv9U_kXVsoII3v-uOpYQIQESEpls47uNTh5Pxlm3bwqWMy26wvon6s4-jrTWsnLEl3ASQAQAKkAF_nTW13BctHlMp1fxoK9HsetBC_6gWlYQAJJNwukk7JwLDJSDlSlwZueoNg3Tk0pMmKC-6BlusdhwznyShhag3e_0jxPU2gli7izn9GNqE5ufCAl28h_2IxYQFOD7t93DKl1HOUWBtNCLXYdQjH0Cg5l8xogsJd4-y1e8CThb3FWDhTaaj3tDYicwAPy1w5tlzgIozeN1OPinx1YQMKSv9Pype3Dl3rna_vG5Gbf-cvVWY0vy-ipnsjI2NDtSOJrka5tVxjr9TlRxf60LchLPUt0SKXg4n5kj_9whFtYQBC6zPfnHj2GkGtZMx4XgaTvCbICIpRnpAsa-F_eLLGIOpjfBAw4kiI61cj0jWP4mXFajspGbvKSCtnU2ek-vdlYQOrhNwydzV5FMGhCqYc6HLE2wEay4wPOgobM8fuW65sSD22B7iCnq_Bh2sCg3eDfI9kB14XBdoGiJNJrfiAnkZxYQLwEzXyM3JTSysjNdPyeJQa1bY3F33brhMVkWtfgD799mHuT6-v1opTgrRIXRFtEJXRqSJGCeUmt5bQwVJU-MM1YQBFMTmf0rvBsDYuMW_loFF99cNhyl_6-L4veJaKqpcgCanJmxZz9XnlmGMRyOH28rjfdYiJSucd3Zzmt-fmx3mZYQDLjPms19K5Qwk3WJwbilKLbuOlxIUH_Jmmm4xRf1qor20QCeZoetTETWM--ANL4VMECRJpqq679SlcJ6pzvg89YQNFzNRl3aLfLmtQv7o4fwFywo5sBPd3wzCYpAH-Mo812R7RlGn6yOmCbzuLEu1p9c2__hCL9F6SZ9BEbiWVgQAhYQCNmAO7Vg-AIzANbJj8Wymcw2chQi3ZOdsRPbf0Es-YYu2VFaYHH6wWBwz6jxLxwjU2_Ex7Se7xicDy8Xzk759NYQKNeT9vN0_b6R25dasBMbc6lQ3CyfQGMqmlXv7qCRC5Drh01YHgS0Lpwv5_7AHgw64pyWQpZ65GDz3J4ZqLgd9NYQG6eiYZGtGqTr-NMDlZFI7c8ycOyxh6xvuUqvcfruq_fzkSUTxWJi58vAW2sBbCfpX7PkOuwYk5ZBYSRkxPSHU5YQF3RCht8Qe-EvVLwV4qFp49l3uzJlOFwCWK8_eEaHxS2kLQtG_5ou1HQ86hechppJhIr4IEUhFlxDBrrogWVvy5YQEFUHFCsdzZaz_lXE6fOxYgGN7wZwt8xrBYZSC4cP2U1JeRN0ba57x0wVW45vBG3CgUBgASpqSvMYvgyPeRgUehYQAYixmVNx7-2n9HhJk2Nlu1fCxOInAQGHwObC3EHBYEaXqnbJnI8PMl5KGe5JerwLwDVEVEuaFQrpHAxSPTs3-NYQNPedCjMimvFdDS0QTMny-nbQoD_80tKXHWpJ8aqXsc7IgO28gzbpV7WgEEoVEkGJXaSLL7PmqYj-OP6K6BekgtYQLS0zJI9UFSKalQqK9ApocGVjaXAViv_779GoY-OImpVeoszOkUpPe9F1N05kGjPbIeaWPM_7IWgbC_5UoXctk1YQKFuLdw5aBdeF7qsFcqJ8ttd9HF6MpkupY2UtGmepP7uXqBiQW_NIiZYzkUFRN1ltcbB4EhRsqXNIaIVDLIe_spYQOsYGg2PR_-GokJUcZGK4d2mITM-zc1YxmolsEC-KMKXZdEzgmXaww7VWgN9X0AIMdgDP2EQExSq_hnA_2tjrQdYQGg39EAS2I4KZDh3lz8U9QcCFzAY4SZJUUZR6z8_p9zsONBm48HpXOT6QLs_pHGW9170l-FNcqIQaCeTL3Vq1fpYQBP4vVTtT56taLcHenX6hPKEe2CyY5jae180-QEvICnO-ev_a6t0V3CRl3ybw0KHwY97nC7CTwZmWQB7NYA07MKDZy9pc3N1ZXJqL3ZhbGlkRnJvbWsvdmFsaWRVbnRpbA"
+  }
+}

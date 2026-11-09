@@ -7,6 +7,7 @@ import { isTrustedNow } from './registry.js';
 import { effectiveStatus } from './store.js';
 import { looksLikeW3cVc, verifyContent } from './verify.js';
 import { ElcInputError, normaliseElcData, signElc } from './elc.js';
+import { inboxRoutes } from './inbox.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_VCS = 50;
@@ -27,8 +28,10 @@ const ok = (data) => ({ code: 'E00', message: 'Success', data });
  * @param {(line:object)=>void} [deps.audit]
  * @param {Map<string, object>} [deps.bankKeys] issuing banks' TrustVC key pairs by DID (server-side only)
  * @param {Function} [deps.signer] TrustVC signW3C (injected in tests)
+ * @param {ReturnType<import('./files.js').memoryFiles>|null} [deps.files] inbox file bytes (Vercel Blob); null = inbox off
+ * @param {{maxBytes?:number, ttlDays?:number}} [deps.inbox]
  */
-export function buildApp({ registry, store, partners = [], adminKeyHash, verifier, bankKeys = new Map(), signer, audit = (l) => console.log(JSON.stringify({ audit: l })), logger = false }) {
+export function buildApp({ registry, store, partners = [], adminKeyHash, verifier, bankKeys = new Map(), signer, files = null, inbox = {}, audit = (l) => console.log(JSON.stringify({ audit: l })), logger = false }) {
   const app = Fastify({ logger, bodyLimit: 15 * 1024 * 1024, genReqId: () => randomUUID() });
 
   // X-Request-Id: the caller's UUID if valid, else a new one; always returned.
@@ -57,6 +60,8 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     }
     req.partner = { name: 'TOTM admin' };
   };
+  // Inbox: either key. An admin key, when sent, is checked first.
+  const requireAny = async (req) => (req.headers['x-admin-key'] ? requireAdmin(req) : requirePartner(req));
 
   app.setErrorHandler((err, req, reply) => {
     if (err instanceof ApiError) return reply.code(err.http).send({ code: err.code, error: err.message });
@@ -272,6 +277,12 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     await store.put(next);
     audited(req, 'admin.vc.suspend', 'ok', { vcId: rec.vcId, txId: rec.txId });
     return ok(next);
+  });
+
+  // ---------- Inbox (X-Api-Key or X-Admin-Key) ----------
+  inboxRoutes(app, {
+    store, files, requireAny, requireAdmin, audited, ApiError, ok, bad,
+    maxBytes: inbox.maxBytes ?? 4 * 1024 * 1024, ttlDays: inbox.ttlDays ?? 30,
   });
 
   return app;
