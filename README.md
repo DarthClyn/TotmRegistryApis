@@ -19,13 +19,15 @@ issuer DID, status and expiry per eLC.
 | GET | `/api/v1/banks/{bic}` | none | Same, by BIC |
 | POST | `/api/v1/verifier` | OTP | Partner self-registration (as NDAKey): DID + public key + email + OTP → API key |
 | GET | `/api/v1/partners/me` | `X-Api-Key` | Check your key |
-| POST | `/api/v1/vp/verification-context` | `X-Api-Key` | Issuer trust + eLC status for a list of VC IDs |
-| POST | `/api/v1/vc/verify` | `X-Api-Key` | Integrity + issuer check of a full eLC |
+| POST | `/api/v1/vp/verification-context` | `X-Api-Key` or `X-Admin-Key` | Issuer trust + eLC status for a list of VC IDs |
+| POST | `/api/v1/vc/verify` | `X-Api-Key` or `X-Admin-Key` | Integrity + issuer check of a full eLC |
 | POST | `/api/v1/admin/otps` | `X-Admin-Key` | One-time registration code for a partner's DID + email (24 h) |
 | GET / DELETE | `/api/v1/admin/partners[/{did}]` | `X-Admin-Key` | List partners / revoke one (its key stops working) |
 | POST | `/api/v1/admin/elc/issue` | `X-Admin-Key` | **Issuing API**: sign an eLC with the bank's key and register it (Tx ID, status active); returns the signed eLC |
 | POST | `/api/v1/admin/vcs` | `X-Admin-Key` | Register an eLC issued elsewhere (creates the Tx ID, status active) |
+| GET | `/api/v1/admin/vcs` | `X-Admin-Key` | All eLC records, newest first (IDs, status, dates) + counts |
 | GET | `/api/v1/admin/vcs/{vcId}` | `X-Admin-Key` | One eLC record |
+| GET | `/api/v1/admin/audit` | `X-Admin-Key` | Audit log, newest first (`?limit=`, `?offset=`); IDs and outcomes only |
 | GET | `/api/v1/admin/tx/{txId}` | `X-Admin-Key` | All eLCs of a Tx ID |
 | POST | `/api/v1/admin/vcs/{vcId}/suspend` | `X-Admin-Key` | Suspend (final, no reactivation) |
 | POST | `/api/v1/{pila\|totm}/send` | either key | **Inbox**: send a file; it lands in the *other* side's inbox |
@@ -37,7 +39,7 @@ issuer DID, status and expiry per eLC.
 
 Responses: `{code: "E00", message: "Success", data}`. Errors: `{code, error}` with `E400` (bad request),
 `E15` (missing / wrong key), `E02` (not found), `E409` (already exists / already suspended), `E500`.
-`X-Request-Id` (UUID) is echoed, or created when missing. The partner guide for PILA is in `docs/`.
+`X-Actor` (admin calls, optional) names the portal operator in audit lines. `X-Request-Id` (UUID) is echoed, or created when missing. The partner guide for PILA is in `docs/`.
 
 Status per eLC: `active`, `suspended`, `expired` (past its `validUntil`), `not_found` (unknown VC ID, or the
 issuer DID / Tx ID given does not match the record). Accept an eLC only when `status` is `active`,

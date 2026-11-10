@@ -6,7 +6,12 @@ import { loadConfig } from './config.js';
 import { warmUp } from './verify.js';
 
 const config = loadConfig();
-const app = buildApp({ ...config, logger: { level: process.env.LOG_LEVEL || 'info' } });
+// Audit lines go to the log and to the store (so the portal can show them); a store failure never fails a request.
+const audit = (line) => {
+  console.log(JSON.stringify({ audit: line }));
+  config.store.appendAudit(line).catch((e) => console.error('audit store failed:', e.message));
+};
+const app = buildApp({ ...config, audit, logger: { level: process.env.LOG_LEVEL || 'info' } });
 // Hosted platforms (Vercel, Railway, Render, Docker) route traffic to 0.0.0.0:$PORT; locally stay on 127.0.0.1.
 const hosted = !!(process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.RENDER);
 await app.listen({ port: config.port, host: process.env.HOST || (hosted ? '0.0.0.0' : '127.0.0.1') });

@@ -1,6 +1,9 @@
 // eLC status records: VC ID -> { vcId, txId, issuerDid, status, validUntil, createdAt, updatedAt }.
 // No eLC content is ever stored. Upstash Redis (REST) in production; memory for tests and local runs.
 
+/** Audit lines kept (newest first). */
+export const AUDIT_MAX = 10000;
+
 /** Tx ID: TX-YYYYMMDD-NNNNNN from a daily counter. */
 const txIdFrom = (n, d = new Date()) => `TX-${d.toISOString().slice(0, 10).replace(/-/g, '')}-${String(n).padStart(6, '0')}`;
 
@@ -12,6 +15,7 @@ export function memoryStore() {
   const partnerKeys = new Map();
   const otps = new Map();
   const files = new Map();
+  const audit = [];
   return {
     kind: 'memory',
     async nextTxId() {
@@ -29,6 +33,11 @@ export function memoryStore() {
     },
     async put(rec) { vcs.set(rec.vcId, rec); },
     async byTxId(txId) { return (byTx.get(txId) ?? []).map((id) => vcs.get(id)).filter(Boolean); },
+    /** All eLC records, newest first (IDs, status and dates only). */
+    async listVcs(limit = 500) { return [...vcs.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit); },
+    /** Audit lines (no document content), newest first. */
+    async appendAudit(line) { audit.unshift(line); audit.length = Math.min(audit.length, AUDIT_MAX); },
+    async listAudit(limit = 200, offset = 0) { return { total: audit.length, lines: audit.slice(offset, offset + limit) }; },
     // Partners: { did, name, email, type, publicKeyHex, keyHash, createdAt }. Looked up by key hash or DID.
     async partnerByKeyHash(h) { const did = partnerKeys.get(h); return did ? partners.get(did) ?? null : null; },
     async partnerByDid(did) { return partners.get(did) ?? null; },
@@ -87,6 +96,7 @@ export function upstashStore({ url, token, prefix = 'tta:' }) {
       const ok = await cmd('SET', k(`vc:${rec.vcId}`), JSON.stringify(rec), 'NX');
       if (ok !== 'OK') return false;
       await cmd('SADD', k(`tx:${rec.txId}`), rec.vcId);
+      await cmd('ZADD', k('vcs'), String(Date.parse(rec.createdAt) || Date.now()), rec.vcId);
       return true;
     },
     async put(rec) { await cmd('SET', k(`vc:${rec.vcId}`), JSON.stringify(rec)); },
@@ -94,6 +104,40 @@ export function upstashStore({ url, token, prefix = 'tta:' }) {
       const ids = (await cmd('SMEMBERS', k(`tx:${txId}`))) ?? [];
       const recs = await Promise.all(ids.map((id) => this.get(id)));
       return recs.filter(Boolean);
+    },
+    /** All eLC records, newest first. Index "vcs" (sorted set); built once from the records if it is missing. */
+    async listVcs(limit = 500) {
+      if (!(await cmd('GET', k('vcs:indexed')))) {
+        let cursor = '0';
+        do {
+          const [next, keys] = await cmd('SCAN', cursor, 'MATCH', k('vc:*'), 'COUNT', '200');
+          cursor = String(next);
+          if (keys.length) {
+            const vals = await cmd('MGET', ...keys);
+            for (const v of vals.filter(Boolean)) {
+              const r = JSON.parse(v);
+              await cmd('ZADD', k('vcs'), String(Date.parse(r.createdAt) || 0), r.vcId);
+            }
+          }
+        } while (cursor !== '0');
+        await cmd('SET', k('vcs:indexed'), new Date().toISOString());
+      }
+      const ids = (await cmd('ZREVRANGE', k('vcs'), '0', String(limit - 1))) ?? [];
+      if (!ids.length) return [];
+      const vals = await cmd('MGET', ...ids.map((id) => k(`vc:${id}`)));
+      return vals.filter(Boolean).map((v) => JSON.parse(v));
+    },
+    /** Audit lines (no document content), newest first, capped at AUDIT_MAX. */
+    async appendAudit(line) {
+      await cmd('LPUSH', k('audit'), JSON.stringify(line));
+      await cmd('LTRIM', k('audit'), '0', String(AUDIT_MAX - 1));
+    },
+    async listAudit(limit = 200, offset = 0) {
+      const [total, rows] = await Promise.all([
+        cmd('LLEN', k('audit')),
+        cmd('LRANGE', k('audit'), String(offset), String(offset + limit - 1)),
+      ]);
+      return { total: Number(total) || 0, lines: (rows ?? []).map((r) => JSON.parse(r)) };
     },
     async partnerByKeyHash(h) {
       const did = await cmd('GET', k(`pkey:${h}`));

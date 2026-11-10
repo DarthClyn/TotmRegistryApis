@@ -127,3 +127,32 @@ test('admin: key required, duplicate VC refused, given Tx ID kept for an amendme
   const tx = (await call('GET', `/api/v1/admin/tx/${first.txId}`, { admin: ADMIN_KEY })).json().data;
   assert.equal(tx.vcs.length, 2);
 });
+
+test('admin lists: eLC records (IDs only) with counts, and the audit log', async () => {
+  const lines = [];
+  const store = memoryStore();
+  const app = buildApp({
+    registry: memoryRegistry([bank()]), store, adminKeyHash: sha256Hex(ADMIN_KEY),
+    audit: (l) => { lines.push(l); store.appendAudit(l); },
+  });
+  const call = (method, url, body, headers = {}) => app.inject({ method, url, payload: body, headers: { 'x-admin-key': ADMIN_KEY, ...headers } });
+  await call('POST', '/api/v1/admin/vcs', { vcId: 'urn:uuid:a', issuerDid: BANK_DID, validUntil: '2099-01-01' }, { 'x-actor': 'Tobi Santoso' });
+  await call('POST', '/api/v1/admin/vcs', { vcId: 'urn:uuid:b', issuerDid: BANK_DID, validUntil: '2020-01-01' });
+  const l = (await call('GET', '/api/v1/admin/vcs')).json().data;
+  assert.equal(l.counts.total, 2);
+  assert.equal(l.counts.active, 1);
+  assert.equal(l.counts.expired, 1);
+  assert.deepEqual(Object.keys(l.vcs[0]).sort(), ['createdAt', 'issuerDid', 'status', 'txId', 'updatedAt', 'validUntil', 'vcId']);
+  const a = (await call('GET', '/api/v1/admin/audit?limit=10')).json().data;
+  assert.equal(a.total, 2);
+  assert.equal(a.lines[1].partner, 'Tobi Santoso');
+  assert.equal(a.lines[0].action, 'admin.vc.register');
+  assert.equal((await app.inject({ method: 'GET', url: '/api/v1/admin/audit' })).statusCode, 401);
+});
+
+test('verify calls accept the admin key too', async () => {
+  const { call } = setup();
+  const r = await call('POST', '/api/v1/vp/verification-context', { admin: ADMIN_KEY, body: { vcIds: [{ vcId: 'urn:uuid:x', issuerDid: BANK_DID }] } });
+  assert.equal(r.statusCode, 200);
+  assert.equal(r.json().data.vcs[0].status, 'not_found');
+});

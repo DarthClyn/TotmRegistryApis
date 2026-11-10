@@ -58,7 +58,9 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
       audited(req, 'auth.admin', 'denied');
       throw new ApiError(401, 'E15', 'Missing or invalid X-Admin-Key');
     }
-    req.partner = { name: 'TOTM admin' };
+    // The portal proxy may name the signed-in operator (X-Actor); it is only a label in audit lines.
+    const actor = typeof req.headers['x-actor'] === 'string' ? req.headers['x-actor'].replace(/[^\w .,'-]/g, '').trim().slice(0, 80) : '';
+    req.partner = { name: actor || 'TOTM admin' };
   };
   // Inbox: either key. An admin key, when sent, is checked first.
   const requireAny = async (req) => (req.headers['x-admin-key'] ? requireAdmin(req) : requirePartner(req));
@@ -138,7 +140,7 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
    * Issuer trust and eLC status for a list of credentials. Request and response follow NDAKey's
    * POST /vp/verification-context; holderDid is optional here, txId is added, status adds "suspended".
    */
-  app.post('/api/v1/vp/verification-context', { preHandler: requirePartner }, async (req) => {
+  app.post('/api/v1/vp/verification-context', { preHandler: requireAny }, async (req) => {
     const body = req.body ?? {};
     const items = body.vcIds;
     if (!Array.isArray(items) || !items.length) throw bad('vcIds must be a non-empty array');
@@ -168,7 +170,7 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
   });
 
   /** Content check of a TOTM-issued (TradeTrust, W3C) eLC: integrity and issuer. Send the whole VC as `vc`. */
-  app.post('/api/v1/vc/verify', { preHandler: requirePartner }, async (req) => {
+  app.post('/api/v1/vc/verify', { preHandler: requireAny }, async (req) => {
     const vc = req.body?.vc;
     if (!looksLikeW3cVc(vc)) throw bad('Send the signed eLC as "vc" (a W3C verifiable credential with a proof)');
     const r = await verifyContent(vc, { verifier });
@@ -254,6 +256,29 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     audited(req, 'admin.vc.register', 'ok', { vcId, txId: rec.txId, issuerDid });
     reply.code(201);
     return ok(rec);
+  });
+
+  /** All registered eLCs, newest first: IDs, status and dates only (no eLC content is stored). ?limit= 1-500. */
+  app.get('/api/v1/admin/vcs', { preHandler: requireAdmin }, async (req) => {
+    const limit = Math.min(Math.max(Number(req.query?.limit) || 500, 1), 500);
+    const now = Date.now();
+    const vcs = (await store.listVcs(limit)).map((r) => ({ ...r, status: effectiveStatus(r, now) }));
+    const soon = now + 30 * 86400_000;
+    const counts = {
+      total: vcs.length,
+      active: vcs.filter((v) => v.status === 'active').length,
+      expiringIn30Days: vcs.filter((v) => v.status === 'active' && v.validUntil && Date.parse(v.validUntil) <= soon).length,
+      expired: vcs.filter((v) => v.status === 'expired').length,
+      suspended: vcs.filter((v) => v.status === 'suspended').length,
+    };
+    return ok({ counts, vcs });
+  });
+
+  /** Audit log, newest first: who did what, with IDs and outcomes only. ?limit= 1-500, ?offset=. */
+  app.get('/api/v1/admin/audit', { preHandler: requireAdmin }, async (req) => {
+    const limit = Math.min(Math.max(Number(req.query?.limit) || 200, 1), 500);
+    const offset = Math.max(Number(req.query?.offset) || 0, 0);
+    return ok(await store.listAudit(limit, offset));
   });
 
   app.get('/api/v1/admin/vcs/:vcId', { preHandler: requireAdmin }, async (req) => {
