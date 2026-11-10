@@ -1,6 +1,6 @@
 // eLC issuing on the TOTM side: builds the W3C VC from MT700 fields and signs it with the bank's own key
-// (TrustVC signW3C, ecdsa-sd-2023). Same data model and format as the VC Layer's Issue eLC, so eLCs from either
-// verify the same way. The bank keys are held server-side (BANK_KEYS_JSON); they never leave the server.
+// (TrustVC signW3C, ecdsa-sd-2023). Field names follow the VC Layer's Issue eLC (MT700); the field IRIs use the
+// TOTM namespace below. The bank keys are held server-side (BANK_KEYS_JSON); they never leave the server.
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -26,10 +26,12 @@ const ALIASES = {
   instructionsToPayingBank: 'instructionsToBank',
 };
 
-const NS = 'urn:orchestration-layer:elc#';
+// Namespace of the eLC field IRIs in the inline @context. eLCs issued before this change carry their own context
+// (urn:orchestration-layer:elc#) and still verify.
+const NS = 'urn:totm-issued:elc#';
 export const ELC_TYPE = 'ElectronicLetterOfCredit';
 
-/** Inline JSON-LD context (nothing hosted): defines every field so the signature covers them. Same as the VC Layer. */
+/** Inline JSON-LD context (nothing hosted): defines every field so the signature covers them. */
 export const ELC_CONTEXT = {
   '@version': 1.1,
   '@protected': true,
