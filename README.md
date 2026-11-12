@@ -21,6 +21,8 @@ issuer DID, status and expiry per eLC.
 | GET | `/api/v1/partners/me` | `X-Api-Key` | Check your key |
 | POST | `/api/v1/vp/verification-context` | `X-Api-Key` or `X-Admin-Key` | Issuer trust + eLC status for a list of VC IDs |
 | POST | `/api/v1/vc/verify` | `X-Api-Key` or `X-Admin-Key` | Integrity + issuer check of a full eLC |
+| POST | `/api/v1/pila/verify` | `X-Api-Key` or `X-Admin-Key` | **PILA credentials** (not issued by TOTM): `{credential: <VC JSON or VC-JWT>}` → PILA SDK checks + NDAKey verification context |
+| GET | `/api/v1/pila/health` | `X-Api-Key` or `X-Admin-Key` | Is the PILA verifier up (SDK version, NDAKey URL, key set) |
 | POST | `/api/v1/admin/otps` | `X-Admin-Key` | One-time registration code for a partner's DID + email (24 h) |
 | GET / DELETE | `/api/v1/admin/partners[/{did}]` | `X-Admin-Key` | List partners / revoke one (its key stops working) |
 | POST | `/api/v1/admin/elc/issue` | `X-Admin-Key` | **Issuing API**: sign an eLC with the bank's key and register it (Tx ID, status active); returns the signed eLC |
@@ -69,12 +71,30 @@ connect it to this project (all environments) > redeploy. The SDK then authentic
 Hobby includes 1 GB storage and 10 GB transfer a month; past that Blob is blocked (not billed) until the 30-day window
 resets. Files expire after `INBOX_TTL_DAYS`; their bytes are deleted from Blob the next time that inbox or sent box is listed.
 
+## PILA verification
+
+`POST /api/v1/pila/verify` checks credentials **not issued by TOTM** (PILA-issued eLCs, VC-JWTs, `did:nda` issuers).
+The work is done by `pila-verifier/` (Go): PILA's official SDK ([go-credential-sdk](https://github.com/pilacorp/go-credential-sdk)
+v1.13.1) for signature, issuer DID, expiry and revocation, and NDAKey's `POST /vp/verification-context` for issuer
+trust and live status. Nothing is reimplemented. The API starts it as a **child process on 127.0.0.1** with a random
+token per start (only the API can call it), passes it only its `PILA_*` settings, and restarts it if it stops.
+
+- **Railway**: the `Dockerfile` builds the Go verifier and the API into one image. Set `PILA_PARTNER_API_KEY`
+  (NDAKey verifier key) on the service. Check `GET /api/v1/pila/health`.
+- **Locally**: `npm run pila:build` once (needs Go 1.24.6+), then `npm run dev`. Or run it yourself
+  (`cd pila-verifier && go run .`) and set `PILA_VERIFIER_URL=http://127.0.0.1:4100`.
+- **Vercel**: no Go binary, so the PILA routes answer 503 (unless `PILA_VERIFIER_URL` points at a hosted one).
+
+The result is the verifier's answer as `data`. Audit line `pila.verify`: VC ID, issuer DID, format, signature result,
+NDAKey status. Never the credential.
+
 ## Run locally
 
 ```bash
 npm install
 cp .env.example .env      # fill in what you have; without REGISTRY_ADDRESS the registry is empty
 npm test                  # API tests + contract tests (local ganache chain)
+npm run pila:build        # optional: PILA verification (Go 1.24.6+)
 npm run dev               # http://127.0.0.1:4300
 ```
 
@@ -121,7 +141,13 @@ Partners onboard like NDAKey onboarded us; TOTM never sees their API key:
 
 `PARTNER_API_KEYS` (hashes from `npm run keygen -- --name …`) still works for manual setups and needs no store.
 
-## 3. Deploy on Vercel
+## 3. Deploy on Railway (recommended)
+
+Railway builds the `Dockerfile` (API + PILA verifier). Set the same variables as below plus `PILA_PARTNER_API_KEY`
+(and optionally `PILA_NDAKEY_URL`). Railway sets `PORT`; the API listens on `0.0.0.0`. Check `/api/v1/health` and
+`/api/v1/pila/health`.
+
+## 3b. Deploy on Vercel (no PILA verification)
 
 1. New Vercel project from this folder. Framework preset: **Fastify** (set in `vercel.json`), entry `src/index.js`.
 2. Storage: add **Upstash Redis** from the Vercel Marketplace (it sets `KV_REST_API_URL` / `KV_REST_API_TOKEN`,
@@ -179,6 +205,9 @@ src/elc.js                             eLC data model (MT700 fields, inline cont
 src/keys.js                            did:key public keys, key hashing
 src/inbox.js                           inbox routes (send, list, download, ack, delete)
 src/files.js                           inbox file bytes (Vercel Blob private / memory)
+src/pila.js                            PILA verifier: child process (bin/pila-verifier) or PILA_VERIFIER_URL
+pila-verifier/                         Go: PILA SDK + NDAKey verification context (built into bin/ by the Dockerfile)
+Dockerfile                             API + PILA verifier in one image (Railway)
 scripts/                               build, deploy, registry CLI, keygen, eLC admin client
 test/                                  node:test (API with real TrustVC; contract on ganache)
 ```

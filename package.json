@@ -17,7 +17,8 @@
     "registry": "node --env-file-if-exists=.env scripts/registry.mjs",
     "elc": "node --env-file-if-exists=.env scripts/elc.mjs",
     "bank-key": "node scripts/bank-key.mjs",
-    "partner": "node --env-file-if-exists=.env scripts/partner.mjs"
+    "partner": "node --env-file-if-exists=.env scripts/partner.mjs",
+    "pila:build": "node scripts/pila-build.mjs"
   },
   "dependencies": {
     "@trustvc/trustvc": "2.15.4",

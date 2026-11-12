@@ -31,7 +31,7 @@ const ok = (data) => ({ code: 'E00', message: 'Success', data });
  * @param {ReturnType<import('./files.js').memoryFiles>|null} [deps.files] inbox file bytes (Vercel Blob); null = inbox off
  * @param {{maxBytes?:number, ttlDays?:number}} [deps.inbox]
  */
-export function buildApp({ registry, store, partners = [], adminKeyHash, verifier, bankKeys = new Map(), signer, files = null, inbox = {}, audit = (l) => console.log(JSON.stringify({ audit: l })), logger = false }) {
+export function buildApp({ registry, store, partners = [], adminKeyHash, verifier, bankKeys = new Map(), signer, files = null, inbox = {}, pila = null, audit = (l) => console.log(JSON.stringify({ audit: l })), logger = false }) {
   const app = Fastify({ logger, bodyLimit: 15 * 1024 * 1024, genReqId: () => randomUUID() });
 
   // X-Request-Id: the caller's UUID if valid, else a new one; always returned.
@@ -302,6 +302,35 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     await store.put(next);
     audited(req, 'admin.vc.suspend', 'ok', { vcId: rec.vcId, txId: rec.txId });
     return ok(next);
+  });
+
+  // ---------- PILA verification (X-Api-Key or X-Admin-Key) ----------
+  // Credentials not issued by TOTM: PILA's SDK (signature, issuer DID, expiry, revocation) + NDAKey's verification
+  // context (trusted issuer, live status), run by pila-verifier/. The credential is passed through, never stored.
+  const needPila = () => { if (!pila) throw new ApiError(503, 'E503', 'PILA verification is not available on this server'); };
+  app.get('/api/v1/pila/health', { preHandler: requireAny }, async (req, reply) => {
+    needPila();
+    const r = await pila.health();
+    if (r.status !== 200) return reply.code(503).send({ code: 'E503', error: r.body?.error ?? 'PILA verifier not ready' });
+    return ok({ ...r.body, mode: pila.kind });
+  });
+  app.post('/api/v1/pila/verify', { preHandler: requireAny }, async (req, reply) => {
+    needPila();
+    const credential = req.body?.credential;
+    if (!credential || (typeof credential !== 'string' && typeof credential !== 'object')) throw bad('credential (a VC JSON object or a VC-JWT string) is required');
+    const r = await pila.verify(credential, req.id);
+    const b = r.body ?? {};
+    if (r.status !== 200) {
+      audited(req, 'pila.verify', r.status >= 500 ? 'failed' : 'rejected', { reason: String(b.error ?? r.status).slice(0, 200) });
+      return reply.code(r.status >= 500 ? 503 : 400).send({ code: r.status >= 500 ? 'E503' : 'E400', error: b.error ?? 'PILA verification failed' });
+    }
+    const c = b.checks ?? {};
+    const passed = ['issuer', 'signature', 'expiration', 'revocation'].every((k) => c[k]?.passed || c[k]?.skipped);
+    audited(req, 'pila.verify', passed ? 'ok' : 'fail', {
+      vcId: b.id ?? null, issuerDid: b.issuer ?? null, format: b.format,
+      signature: c.signature?.passed ? 'pass' : 'fail', ndakey: b.ndakey?.status ?? (b.ndakey?.called ? 'error' : 'skipped'),
+    });
+    return ok(b);
   });
 
   // ---------- Inbox (X-Api-Key or X-Admin-Key) ----------
