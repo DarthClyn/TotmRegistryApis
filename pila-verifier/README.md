@@ -10,26 +10,21 @@ The API runs it for you as a child process on `127.0.0.1` (never exposed): the D
 
 | Endpoint (internal) | Body | Returns |
 | --- | --- | --- |
-| `GET /health` | – | resolver, NDAKey URL, SDK version |
-| `POST /verify` | `{ "credential": <JSON object or JWT string> }` | `checks.issuer / sigHow each check runs (all in PILA's SDK, no API key):
+| `GET /health` | – | SDK version |
+| `POST /verify` | `{ "credential": <JSON object or JWT string> }` | `checks.issuer / sigHow it works (no DID is resolved, no API key needed):
 
-- **signature** – `cred.Verify()` (JSON-LD Data Integrity, VC-JWT ES256K/ES256, SD-JWT).
-- **issuer** – resolves the issuer DID: `did:nda` via NDAKey's public registry lookup (`GET /dids/{did}`), then PILA's
-  public resolver; `did:key` locally.
-- **expiration / revocation** – `WithCheckExpiration()` / `WithCheckRevocation()` (when `credentialStatus` exists).
+- **Issuer key**:
+  1. from PILA's verification context API (`vcs[].didPublicKey`), which the portal calls first and passes in as
+     `issuerPublicKey` (NDAKey verifier guide 3.2, steps 6–8);
+  2. if PILA has none (issuer not registered): recovered from the ES256K signature of the VC-JWT, and used only if its
+     address equals the issuer's `did:nda` DID. Open check: no registry needed.
+- **signature** (integrity + issuer) – `cred.Verify()` in PILA's SDK with that key. A different signer or a changed
+  payload fails.
+- **expiration / revocation** – SDK options, reported but not shown in the portal.
 
-The SDK verifies the token itself (it reads the issuer from `iss` / `kid`); nothing we read is given to it. The response
-also returns the credential's ID, issuer, holder and dates, which the portal needs to call PILA's verification context
-API. They come from the credential body (`GetContents`); for a VC-JWT whose body leaves them out, from the JWT's
-registered claims (`iss`, `jti`, `sub`, `nbf`, `exp`), as the VC-JWT encoding allows. The body wins when it has a value.
-The SDK has no getter for these claims, so this is the one thing read outside it. Tests: `go test ./...` (`claims_test.go`).
-
-| Variable | Default | |
-| --- | --- | --- |
-| `PILA_NDAKEY_URL` | `https://api-beta.ndakey.vn/service/api/v1` | public DID lookup; `off` uses PILA's resolver only |
-| `PILA_DID_RESOLVER_URL` | `https://api.ndadid.vn/api/v1/did` | PILA's public DID resolver |
-
-A_DID_RESOLVER_URL` | `https://api.ndadid.vn/api/v1/did` | PILA's public DID resolver |
+Issuer trust (registered with PILA) and live status are PILA's verification context answer, not this program's.
+For a VC-JWT whose body leaves out the issuer / ID, they are read from the JWT claims (`iss`, `jti`, `sub`).
+Tests: `go test ./...`.
 
 The child only receives `PILA_*`, proxy and certificate variables, never the API's own secrets, and a random token
 per start, so nothing but the API can call it.

@@ -6,7 +6,7 @@ WORKDIR /src
 COPY pila-verifier/go.mod pila-verifier/go.sum ./
 RUN go mod download
 COPY pila-verifier/ ./
-RUN go build -trimpath -ldflags="-s -w" -o /out/pila-verifier .
+RUN go mod tidy && go build -trimpath -ldflags="-s -w" -o /out/pila-verifier .
 
 FROM node:22-bookworm-slim
 # Go uses the system CA store for HTTPS (NDAKey, PILA's DID resolver).

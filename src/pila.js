@@ -33,7 +33,8 @@ function client({ kind, url, token, start = async () => {}, stop = () => {}, rea
     kind,
     start,
     stop,
-    verify: (credential, requestId) => call('POST', '/verify', { credential }, requestId, 45000),
+    /** issuerPublicKey: the issuer's key from PILA's verification context (didPublicKey); no DID is resolved. */
+    verify: (credential, requestId, issuerPublicKey) => call('POST', '/verify', { credential, ...(issuerPublicKey ? { issuerPublicKey } : {}) }, requestId, 45000),
     health: () => call('GET', '/health', undefined, undefined, 5000),
   };
 }

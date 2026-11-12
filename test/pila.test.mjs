@@ -90,3 +90,16 @@ http.createServer((q, s) => {
     v.stop();
   }
 });
+
+test('PILA verify: passes the issuer key from the verification context to the verifier; rejects a malformed key', async () => {
+  let seen;
+  const pila = { kind: 'fake', start: async () => {}, stop() {}, health: async () => ({ status: 200, body: {} }),
+    verify: async (credential, requestId, key) => { seen = key; return { status: 200, body: sdkAnswer }; } };
+  const { app } = setup(pila);
+  const key = '0x02' + 'ab'.repeat(32);
+  const ok = await app.inject({ method: 'POST', url: '/api/v1/pila/verify', headers: { 'x-admin-key': ADMIN_KEY }, payload: { credential: 'a.b.c', issuerPublicKey: key } });
+  assert.equal(ok.statusCode, 200);
+  assert.equal(seen, key);
+  const bad = await app.inject({ method: 'POST', url: '/api/v1/pila/verify', headers: { 'x-admin-key': ADMIN_KEY }, payload: { credential: 'a.b.c', issuerPublicKey: 'nope' } });
+  assert.equal(bad.statusCode, 400);
+});

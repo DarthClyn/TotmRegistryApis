@@ -305,8 +305,9 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
   });
 
   // ---------- PILA verification (X-Api-Key or X-Admin-Key) ----------
-  // Credentials not issued by TOTM: PILA's official SDK (integrity/signature, issuer DID, expiry, revocation), run by
-  // pila-verifier/. Issuer trust and live status are PILA's own verification context API, called by the portal.
+  // Credentials not issued by TOTM: PILA's official SDK (integrity/signature, issuer, expiry, revocation), run by
+  // pila-verifier/, with the issuer key the portal got from PILA's verification context API (which also gives trust and
+  // live status). No DID is resolved.
   // The credential is passed through, never stored.
   const needPila = () => { if (!pila) throw new ApiError(503, 'E503', 'PILA verification is not available on this server'); };
   app.get('/api/v1/pila/health', { preHandler: requireAny }, async (req, reply) => {
@@ -319,7 +320,11 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     needPila();
     const credential = req.body?.credential;
     if (!credential || (typeof credential !== 'string' && typeof credential !== 'object')) throw bad('credential (a VC JSON object or a VC-JWT string) is required');
-    const r = await pila.verify(credential, req.id);
+    // The issuer's public key from PILA's verification context (vcs[].didPublicKey): the SDK checks the signature with
+    // it; no DID is looked up. Without it the signature cannot be checked.
+    const key = req.body?.issuerPublicKey;
+    if (key != null && (typeof key !== 'string' || !/^(0x)?(0[23][0-9a-f]{64}|04[0-9a-f]{128})$/i.test(key))) throw bad('issuerPublicKey must be a secp256k1 public key in hex');
+    const r = await pila.verify(credential, req.id, key || undefined);
     const b = r.body ?? {};
     if (r.status !== 200) {
       audited(req, 'pila.verify', r.status >= 500 ? 'failed' : 'rejected', { reason: String(b.error ?? r.status).slice(0, 200) });

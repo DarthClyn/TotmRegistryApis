@@ -21,7 +21,7 @@ issuer DID, status and expiry per eLC.
 | GET | `/api/v1/partners/me` | `X-Api-Key` | Check your key |
 | POST | `/api/v1/vp/verification-context` | `X-Api-Key` or `X-Admin-Key` | Issuer trust + eLC status for a list of VC IDs |
 | POST | `/api/v1/vc/verify` | `X-Api-Key` or `X-Admin-Key` | Integrity + issuer check of a full eLC |
-| POST | `/api/v1/pila/verify` | `X-Api-Key` or `X-Admin-Key` | **PILA credentials** (not issued by TOTM): `{credential: <VC JSON or VC-JWT>}` → PILA SDK checks (integrity, signature, issuer, expiry, revocation) |
+| POST | `/api/v1/pila/verify` | `X-Api-Key` or `X-Admin-Key` | **PILA credentials** (not issued by TOTM): `{credential, issuerPublicKey?}` → PILA SDK checks (integrity, issuer) |
 | GET | `/api/v1/pila/health` | `X-Api-Key` or `X-Admin-Key` | Is the PILA verifier up (SDK version, resolver) |
 | POST | `/api/v1/admin/otps` | `X-Admin-Key` | One-time registration code for a partner's DID + email (24 h) |
 | GET / DELETE | `/api/v1/admin/partners[/{did}]` | `X-Admin-Key` | List partners / revoke one (its key stops working) |
@@ -74,11 +74,10 @@ resets. Files expire after `INBOX_TTL_DAYS`; their bytes are deleted from Blob t
 ## PILA verification
 
 `POST /api/v1/pila/verify` runs **PILA's official SDK** ([go-credential-sdk](https://github.com/pilacorp/go-credential-sdk)
-v1.13.1) on credentials **not issued by TOTM** (PILA-issued eLCs, VC-JWTs, `did:nda` issuers): integrity/signature,
-issuer DID (NDAKey's public DID lookup, then PILA's resolver), expiry and revocation. No API key is needed and nothing
-is reimplemented. For a VC-JWT whose credential body has no issuer or ID, they are taken from the JWT claims
-(`iss`, `jti`, `sub`), so the portal can call PILA's verification context with them. Issuer trust and live status are **not** done here: they come from PILA's own verification context
-API (`POST /vp/verification-context` on NDAKey), which the portal calls with its NDAKey key.
+v1.13.1) on credentials **not issued by TOTM**: integrity (signature) and issuer (signed by the issuer it names). No DID is
+resolved: the issuer key is `issuerPublicKey` from PILA's verification context (sent by the portal, which calls that API
+first with its NDAKey key), or, when PILA has none, the key recovered from the ES256K signature if its address is the
+issuer's `did:nda` DID. Issuer trust and live status are PILA's verification context answer, not done here.
 
 The Go code is `pila-verifier/`. The API starts it as a **child process on 127.0.0.1** with a random token per start
 (only the API can call it), passes it only its `PILA_*` settings, and restarts it if it stops.

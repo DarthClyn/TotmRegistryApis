@@ -1,36 +1,38 @@
 // Command pila-verifier checks credentials NOT issued by TOTM (PILA-issued eLCs and other PILA credentials) for the
-// TOTM Trust API (POST /api/v1/pila/verify). It is a verification-only cut of the Orchestration Layer's pila-bridge:
+// TOTM Trust API (POST /api/v1/pila/verify), with PILA's official Go SDK (github.com/pilacorp/go-credential-sdk):
+// integrity (the signature), the issuer (signed by the issuer it names), expiry and revocation. Nothing is reimplemented.
 //
-//   - PILA's official Go SDK (github.com/pilacorp/go-credential-sdk) checks the signature, resolves the issuer DID
-//     (NDAKey registry, then PILA's public DID resolver), expiry and revocation. Nothing is reimplemented here.
+// No DID is resolved here. The issuer's public key comes from:
+//  1. PILA's verification context API (vcs[].didPublicKey), which the portal calls first and passes in (NDAKey
+//     verifier guide 3.2, steps 6-8); or, when PILA has no key (issuer not registered),
+//  2. the signature itself: an ES256K VC-JWT's signature gives back the signing key, and a did:nda DID is that key's
+//     address, so the key is used only if its address equals the stated issuer's DID. Open, no registry needed.
 //
-//   - Integrity and signature only. Issuer trust and live status come from PILA's own verification context API
-//     (NDAKey POST /vp/verification-context), which the portal calls separately. No API key is needed here.
+// Either way PILA's SDK then checks the signature with that key. Issuer trust and live status are the verification
+// context's answer, not this program's.
 //
-//     The API starts it as a child process (bin/pila-verifier, see src/pila.js and the Dockerfile).
-//     go run .            (from pila-verifier/, listens on 127.0.0.1:4100) to run it on its own.
+//	The API starts it as a child process (bin/pila-verifier, see src/pila.js and the Dockerfile).
+//	go run .            (from pila-verifier/, listens on 127.0.0.1:4100) to run it on its own.
 //
 // Endpoints:
 //
-//	GET  /health   resolver and NDAKey URL
-//	POST /verify   {credential: <JSON object | JWT string>} -> PILA SDK checks
+//	GET  /health   SDK version
+//	POST /verify   {credential: <JSON object | JWT string>, issuerPublicKey?: <compressed secp256k1 hex from PILA>}
 //
-// Environment (read from ../.env, the API's .env, without overriding the shell):
+// Environment:
 //
 //	PORT                   default 4100
-//	PILA_DID_RESOLVER_URL  default https://api.ndadid.vn/api/v1/did (the SDK's public resolver)
-//	PILA_NDAKEY_URL        default https://api-beta.ndakey.vn/service/api/v1: public DID lookup (/dids/{did}), no key;
-//	                       "off" resolves with PILA's DID resolver only
 //	PILA_VERIFIER_TOKEN    optional shared secret; when set, callers must send X-Verifier-Token (set it when hosted)
-//	DOTENV_FILE            default ../.env
 package main
 
 import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,15 +42,13 @@ import (
 	"strings"
 	"time"
 
+	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/mr-tron/base58"
 	vm "github.com/pilacorp/go-credential-sdk/credential/common/verification-method"
 	"github.com/pilacorp/go-credential-sdk/credential/vc"
 )
 
-const (
-	defaultResolver = "https://api.ndadid.vn/api/v1/did"
-	sdkVersion      = "github.com/pilacorp/go-credential-sdk v1.13.1"
-)
+const sdkVersion = "github.com/pilacorp/go-credential-sdk v1.13.1"
 
 // p256MulticodecPrefix is varint(0x1200), the multicodec for a P-256 public key.
 var p256MulticodecPrefix = []byte{0x80, 0x24}
@@ -72,14 +72,15 @@ func p256FromDIDKey(did string) (*ecdsa.PublicKey, string, error) {
 	return &ecdsa.PublicKey{Curve: elliptic.P256(), X: x, Y: y}, s, nil
 }
 
-// chainResolver: did:key resolves locally (self-describing); did:nda goes to NDAKey's registry first, then PILA's
-// public resolver through the SDK. Same order as the pila-bridge, without its demo-bank fallback.
-type chainResolver struct {
-	http   *vm.HTTPResolver
-	ndakey *ndakeyClient // nil when PILA_NDAKEY_URL=off
+// keyResolver gives the SDK the issuer's key without any lookup: did:key describes its own key; for the credential's
+// issuer, the key PILA's verification context returned (didPublicKey). Any other DID is refused, so a credential signed
+// by a different DID than the one PILA vouched for fails the signature check.
+type keyResolver struct {
+	issuer string // the credential's issuer DID
+	keyHex string // its public key from PILA's verification context, compressed secp256k1 hex
 }
 
-func (c chainResolver) ResolveDocument(ctx context.Context, did string) (*vm.DIDDocument, error) {
+func (k keyResolver) ResolveDocument(_ context.Context, did string) (*vm.DIDDocument, error) {
 	if strings.HasPrefix(did, "did:key:") {
 		pub, mb, err := p256FromDIDKey(did)
 		if err != nil {
@@ -92,31 +93,17 @@ func (c chainResolver) ResolveDocument(ctx context.Context, did string) (*vm.DID
 		}
 		return vm.NewDIDDocument(base, entry), nil
 	}
-	if c.ndakey != nil && strings.HasPrefix(did, "did:nda:") {
-		if d, err := c.ndakey.lookup(ctx, did); err == nil {
-			return d.document()
-		}
+	if did == k.issuer && k.keyHex != "" {
+		return vm.NewDIDDocument(did, vm.NewSecp256k1VM(did, "key-1", strings.TrimPrefix(k.keyHex, "0x"))), nil
 	}
-	return c.http.ResolveDocument(ctx, did)
-}
-
-// issuerSource says where the issuer DID document came from.
-func (c chainResolver) issuerSource(ctx context.Context, did string) string {
-	if c.ndakey != nil && strings.HasPrefix(did, "did:nda:") {
-		if d, err := c.ndakey.lookup(ctx, did); err == nil {
-			return "NDAKey registry (" + d.Type + ")"
-		}
+	if did != k.issuer {
+		return nil, fmt.Errorf("signed by %s, not by the issuer %s", did, k.issuer)
 	}
-	if strings.HasPrefix(did, "did:key:") {
-		return "did:key (self-describing, not a registered issuer)"
-	}
-	return "PILA DID resolver"
+	return nil, fmt.Errorf("no public key for %s from PILA's verification context", did)
 }
 
 type server struct {
-	resolverURL string
-	resolver    chainResolver
-	token       string // optional shared secret for callers
+	token string // optional shared secret for callers
 }
 
 type check struct {
@@ -126,30 +113,23 @@ type check struct {
 }
 
 type verifyResponse struct {
-	Format       string           `json:"format"` // json | jwt
-	ID           string           `json:"id,omitempty"`
-	Holder       string           `json:"holder,omitempty"` // credentialSubject.id
-	Issuer       string           `json:"issuer,omitempty"`
-	Registry     *registryInfo    `json:"issuerRegistry,omitempty"`
-	Types        []string         `json:"types,omitempty"`
-	Subject      map[string]any   `json:"subject,omitempty"` // credentialSubject, for the result card
-	ValidFrom    string           `json:"validFrom,omitempty"`
-	ValidUntil   string           `json:"validUntil,omitempty"`
-	IssuerSource string           `json:"issuerSource,omitempty"`
-	Checks       map[string]check `json:"checks"` // issuer, signature, expiration, revocation
-	SDK          string           `json:"sdk"`
+	Format          string           `json:"format"` // json | jwt
+	ID              string           `json:"id,omitempty"`
+	Holder          string           `json:"holder,omitempty"` // credentialSubject.id
+	Issuer          string           `json:"issuer,omitempty"`
+	Types           []string         `json:"types,omitempty"`
+	Subject         map[string]any   `json:"subject,omitempty"` // credentialSubject, for the result card
+	ValidFrom       string           `json:"validFrom,omitempty"`
+	ValidUntil      string           `json:"validUntil,omitempty"`
+	IssuerSource    string           `json:"issuerSource,omitempty"`
+	IssuerPublicKey string           `json:"issuerPublicKey,omitempty"` // the key the signature was checked with
+	Checks          map[string]check `json:"checks"`                    // issuer, signature, expiration, revocation
+	SDK             string           `json:"sdk"`
 }
 
 func main() {
 	loadDotEnv(envOr("DOTENV_FILE", "../.env"))
-	resolverURL := envOr("PILA_DID_RESOLVER_URL", defaultResolver)
-	vc.Init(resolverURL)
-
-	s := &server{
-		resolverURL: resolverURL,
-		resolver:    chainResolver{http: vm.NewHTTPResolver(resolverURL), ndakey: ndakeyFromEnv()},
-		token:       os.Getenv("PILA_VERIFIER_TOKEN"),
-	}
+	s := &server{token: os.Getenv("PILA_VERIFIER_TOKEN")}
 
 	port := envOr("PORT", "4100")
 	// Loopback on a developer machine; all interfaces when hosted (Railway/Vercel set these).
@@ -157,8 +137,7 @@ func main() {
 	if os.Getenv("RAILWAY_ENVIRONMENT") != "" || os.Getenv("VERCEL") != "" {
 		host = "0.0.0.0"
 	}
-	log.Printf("pila-verifier on %s:%s (resolver %s, NDAKey DID lookup %s, token %v)",
-		host, port, resolverURL, ndakeyURL(), s.token != "")
+	log.Printf("pila-verifier on %s:%s (%s, keys from PILA's verification context, token %v)", host, port, sdkVersion, s.token != "")
 	log.Fatal(http.ListenAndServe(host+":"+port, logRequests(s.routes())))
 }
 
@@ -180,12 +159,13 @@ func (s *server) authorised(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *server) health(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, 200, map[string]any{"ok": true, "resolver": s.resolverURL, "ndakey": ndakeyURL(), "sdk": sdkVersion})
+	writeJSON(w, 200, map[string]any{"ok": true, "sdk": sdkVersion, "issuerKeys": "PILA verification context (passed in)"})
 }
 
 func (s *server) verify(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Credential json.RawMessage `json:"credential"`
+		Credential      json.RawMessage `json:"credential"`
+		IssuerPublicKey string          `json:"issuerPublicKey"` // from PILA's verification context (didPublicKey)
 	}
 	if err := decode(r, &body); err != nil || len(body.Credential) == 0 {
 		writeErr(w, 400, "body must be {credential: <JSON object or JWT string>}")
@@ -213,28 +193,43 @@ func (s *server) verify(w http.ResponseWriter, r *http.Request) {
 		fillFromJWTClaims(&resp, string(raw))
 	}
 
-	// 1. Issuer: can the issuer's DID be resolved?
-	if resp.Issuer == "" {
+	res := keyResolver{issuer: resp.Issuer, keyHex: strings.TrimSpace(body.IssuerPublicKey)}
+
+	// 1. Issuer key: did:key carries its own; otherwise PILA's verification context, or the key the signature was made
+	// with when its address is the stated issuer's DID. "issuer" passes when a key for the stated issuer is in hand;
+	// the signature check below then proves that key signed this content.
+	switch {
+	case resp.Issuer == "":
 		resp.Checks["issuer"] = check{Error: "credential has no issuer"}
-	} else if _, err := s.resolver.ResolveDocument(r.Context(), resp.Issuer); err != nil {
-		resp.Checks["issuer"] = check{Error: err.Error()}
-	} else {
+	case strings.HasPrefix(resp.Issuer, "did:key:"):
 		resp.Checks["issuer"] = check{Passed: true}
-		resp.IssuerSource = s.resolver.issuerSource(r.Context(), resp.Issuer)
+		resp.IssuerSource = "did:key (self-describing)"
+	case res.keyHex != "":
+		resp.Checks["issuer"] = check{Passed: true}
+		resp.IssuerSource = "PILA verification context"
+	case format == "jwt":
+		key, err := keyFromSignature(string(raw), resp.Issuer)
+		if err != nil {
+			resp.Checks["issuer"] = check{Error: err.Error()}
+		} else {
+			res.keyHex = key
+			resp.Checks["issuer"] = check{Passed: true}
+			resp.IssuerSource = "signature (key address matches the issuer DID)"
+		}
+	default:
+		resp.Checks["issuer"] = check{Error: "no public key for the issuer: not in PILA's verification context"}
 	}
-	if resp.Issuer != "" {
-		resp.Registry = s.resolver.ndakey.registry(r.Context(), resp.Issuer)
-	}
+	resp.IssuerPublicKey = res.keyHex
 
 	// 2. Signature (proof) through the SDK.
-	if err := cred.Verify(vc.WithResolver(s.resolver)); err != nil {
+	if err := cred.Verify(vc.WithResolver(res)); err != nil {
 		resp.Checks["signature"] = check{Error: err.Error()}
 	} else {
 		resp.Checks["signature"] = check{Passed: true}
 	}
 
 	// 3. Expiration.
-	if err := cred.Verify(vc.WithResolver(s.resolver), vc.WithCheckExpiration()); err != nil && resp.Checks["signature"].Passed {
+	if err := cred.Verify(vc.WithResolver(res), vc.WithCheckExpiration()); err != nil && resp.Checks["signature"].Passed {
 		resp.Checks["expiration"] = check{Error: err.Error()}
 	} else {
 		resp.Checks["expiration"] = check{Passed: true, Skipped: resp.ValidUntil == ""}
@@ -243,7 +238,7 @@ func (s *server) verify(w http.ResponseWriter, r *http.Request) {
 	// 4. Revocation (status list), only if the credential declares a status.
 	if cred.ExtractField("credentialStatus") == nil {
 		resp.Checks["revocation"] = check{Passed: true, Skipped: true}
-	} else if err := cred.Verify(vc.WithResolver(s.resolver), vc.WithCheckRevocation()); err != nil && resp.Checks["signature"].Passed {
+	} else if err := cred.Verify(vc.WithResolver(res), vc.WithCheckRevocation()); err != nil && resp.Checks["signature"].Passed {
 		resp.Checks["revocation"] = check{Error: err.Error()}
 	} else {
 		resp.Checks["revocation"] = check{Passed: resp.Checks["signature"].Passed}
@@ -298,6 +293,41 @@ func fillSummary(resp *verifyResponse, contents []byte) {
 			}
 		}
 	}
+}
+
+// errNotIssuer: the signature was made with a key whose address is not the stated issuer's DID.
+var errNotIssuer = errors.New("not signed by the stated issuer: the signing key's address is not the issuer DID")
+
+// keyFromSignature recovers the key an ES256K VC-JWT was signed with and returns it (compressed hex) only if its
+// address is the stated issuer's did:nda address. A changed payload recovers a different key, so it fails here too.
+func keyFromSignature(token, issuerDID string) (string, error) {
+	addr := issuerDID[strings.LastIndex(issuerDID, ":")+1:]
+	if !strings.HasPrefix(issuerDID, "did:nda:") || len(addr) != 42 || !strings.HasPrefix(addr, "0x") {
+		return "", fmt.Errorf("no public key for %s: not in PILA's verification context", issuerDID)
+	}
+	parts := strings.Split(strings.SplitN(token, "~", 2)[0], ".")
+	if len(parts) != 3 {
+		return "", errors.New("not a compact JWT")
+	}
+	var header struct{ Alg string }
+	if h, err := base64.RawURLEncoding.DecodeString(parts[0]); err != nil || json.Unmarshal(h, &header) != nil {
+		return "", errors.New("unreadable JWT header")
+	}
+	if header.Alg != "ES256K" {
+		return "", fmt.Errorf("no public key for %s: not in PILA's verification context (%s keys cannot be recovered)", issuerDID, header.Alg)
+	}
+	sig, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil || len(sig) != 64 {
+		return "", errors.New("unreadable ES256K signature")
+	}
+	digest := sha256.Sum256([]byte(parts[0] + "." + parts[1]))
+	for v := byte(0); v < 2; v++ {
+		pub, err := ethcrypto.SigToPub(digest[:], append(append([]byte{}, sig...), v))
+		if err == nil && strings.EqualFold(ethcrypto.PubkeyToAddress(*pub).Hex(), addr) {
+			return "0x" + hex.EncodeToString(ethcrypto.CompressPubkey(pub)), nil
+		}
+	}
+	return "", errNotIssuer
 }
 
 // fillFromJWTClaims fills what the credential body leaves out from the JWT's registered claims, as the VC-JWT encoding
@@ -400,13 +430,4 @@ func logRequests(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		log.Printf("%s %s request=%s %s", r.Method, r.URL.Path, r.Header.Get("X-Request-Id"), time.Since(start).Round(time.Millisecond))
 	})
-}
-
-func ndakeyURL() string { return envOr("PILA_NDAKEY_URL", defaultNDAKeyURL) }
-
-func ndakeyFromEnv() *ndakeyClient {
-	if ndakeyURL() == "off" {
-		return nil
-	}
-	return newNDAKeyClient(ndakeyURL())
 }
