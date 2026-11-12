@@ -4,23 +4,23 @@
 //   - PILA's official Go SDK (github.com/pilacorp/go-credential-sdk) checks the signature, resolves the issuer DID
 //     (NDAKey registry, then PILA's public DID resolver), expiry and revocation. Nothing is reimplemented here.
 //
-//   - NDAKey's verifier API (POST /vp/verification-context) adds what the SDK cannot know: whether the issuer is
-//     trusted and the credential's live status. It needs our NDAKey verifier key (PILA_PARTNER_API_KEY).
+//   - Integrity and signature only. Issuer trust and live status come from PILA's own verification context API
+//     (NDAKey POST /vp/verification-context), which the portal calls separately. No API key is needed here.
 //
 //     The API starts it as a child process (bin/pila-verifier, see src/pila.js and the Dockerfile).
 //     go run .            (from pila-verifier/, listens on 127.0.0.1:4100) to run it on its own.
 //
 // Endpoints:
 //
-//	GET  /health   resolver, NDAKey URL, whether the verifier key is set
-//	POST /verify   {credential: <JSON object | JWT string>} -> SDK checks + NDAKey verification context
+//	GET  /health   resolver and NDAKey URL
+//	POST /verify   {credential: <JSON object | JWT string>} -> PILA SDK checks
 //
 // Environment (read from ../.env, the API's .env, without overriding the shell):
 //
 //	PORT                   default 4100
 //	PILA_DID_RESOLVER_URL  default https://api.ndadid.vn/api/v1/did (the SDK's public resolver)
-//	PILA_NDAKEY_URL        default https://api-beta.ndakey.vn/service/api/v1 ("off" to skip NDAKey)
-//	PILA_PARTNER_API_KEY   NDAKey verifier API key (SECRET); without it there is no verification context
+//	PILA_NDAKEY_URL        default https://api-beta.ndakey.vn/service/api/v1: public DID lookup (/dids/{did}), no key;
+//	                       "off" resolves with PILA's DID resolver only
 //	PILA_VERIFIER_TOKEN    optional shared secret; when set, callers must send X-Verifier-Token (set it when hosted)
 //	DOTENV_FILE            default ../.env
 package main
@@ -115,7 +115,6 @@ func (c chainResolver) issuerSource(ctx context.Context, did string) string {
 type server struct {
 	resolverURL string
 	resolver    chainResolver
-	apiKey      string // NDAKey verifier key
 	token       string // optional shared secret for callers
 }
 
@@ -123,17 +122,6 @@ type check struct {
 	Passed  bool   `json:"passed"`
 	Error   string `json:"error,omitempty"`
 	Skipped bool   `json:"skipped,omitempty"` // the check does not apply (e.g. no credentialStatus)
-}
-
-// ndakeyResult is NDAKey's verification context for this credential (or why there is none).
-type ndakeyResult struct {
-	Called          bool    `json:"called"`
-	RequestID       string  `json:"requestId,omitempty"`
-	Status          string  `json:"status,omitempty"` // active | revoked | expired | verified | not_found
-	IsIssuerTrusted *bool   `json:"isIssuerTrusted,omitempty"`
-	DIDPublicKey    *string `json:"didPublicKey,omitempty"`
-	Error           string  `json:"error,omitempty"`   // the call failed
-	Skipped         string  `json:"skipped,omitempty"` // why it was not called
 }
 
 type verifyResponse struct {
@@ -148,7 +136,6 @@ type verifyResponse struct {
 	ValidUntil   string           `json:"validUntil,omitempty"`
 	IssuerSource string           `json:"issuerSource,omitempty"`
 	Checks       map[string]check `json:"checks"` // issuer, signature, expiration, revocation
-	NDAKey       ndakeyResult     `json:"ndakey"`
 	SDK          string           `json:"sdk"`
 }
 
@@ -160,7 +147,6 @@ func main() {
 	s := &server{
 		resolverURL: resolverURL,
 		resolver:    chainResolver{http: vm.NewHTTPResolver(resolverURL), ndakey: ndakeyFromEnv()},
-		apiKey:      os.Getenv("PILA_PARTNER_API_KEY"),
 		token:       os.Getenv("PILA_VERIFIER_TOKEN"),
 	}
 
@@ -170,8 +156,8 @@ func main() {
 	if os.Getenv("RAILWAY_ENVIRONMENT") != "" || os.Getenv("VERCEL") != "" {
 		host = "0.0.0.0"
 	}
-	log.Printf("pila-verifier on %s:%s (resolver %s, NDAKey %s, verifier key %v, token %v)",
-		host, port, resolverURL, ndakeyURL(), s.apiKey != "", s.token != "")
+	log.Printf("pila-verifier on %s:%s (resolver %s, NDAKey DID lookup %s, token %v)",
+		host, port, resolverURL, ndakeyURL(), s.token != "")
 	log.Fatal(http.ListenAndServe(host+":"+port, logRequests(s.routes())))
 }
 
@@ -193,7 +179,7 @@ func (s *server) authorised(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *server) health(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, 200, map[string]any{"ok": true, "resolver": s.resolverURL, "ndakey": ndakeyURL(), "verifierKey": s.apiKey != "", "sdk": sdkVersion})
+	writeJSON(w, 200, map[string]any{"ok": true, "resolver": s.resolverURL, "ndakey": ndakeyURL(), "sdk": sdkVersion})
 }
 
 func (s *server) verify(w http.ResponseWriter, r *http.Request) {
@@ -259,28 +245,7 @@ func (s *server) verify(w http.ResponseWriter, r *http.Request) {
 		resp.Checks["revocation"] = check{Passed: resp.Checks["signature"].Passed}
 	}
 
-	// 5. NDAKey verification context: issuer trust + live status.
-	resp.NDAKey = s.ndakeyContext(r.Context(), resp, r.Header.Get("X-Request-Id"))
-
 	writeJSON(w, 200, resp)
-}
-
-func (s *server) ndakeyContext(ctx context.Context, resp verifyResponse, requestID string) ndakeyResult {
-	switch {
-	case s.resolver.ndakey == nil:
-		return ndakeyResult{Skipped: "NDAKey is switched off (PILA_NDAKEY_URL=off)"}
-	case s.apiKey == "":
-		return ndakeyResult{Skipped: "no NDAKey verifier key configured (PILA_PARTNER_API_KEY)"}
-	case resp.ID == "" || resp.Issuer == "":
-		return ndakeyResult{Skipped: "the credential has no ID or issuer"}
-	case resp.Holder == "":
-		return ndakeyResult{Skipped: "the credential has no holder DID (credentialSubject.id), which NDAKey needs"}
-	}
-	out, err := s.resolver.ndakey.verificationContext(ctx, s.apiKey, resp.Holder, resp.ID, resp.Issuer, requestID)
-	if err != nil {
-		return ndakeyResult{Called: true, Error: err.Error()}
-	}
-	return *out
 }
 
 func fillSummary(resp *verifyResponse, contents []byte) {

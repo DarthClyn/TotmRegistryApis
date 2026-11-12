@@ -1,5 +1,5 @@
 // PILA verification for credentials not issued by TOTM. The work is done by pila-verifier/ (Go), which runs PILA's
-// official credential SDK and NDAKey's verification context API; this module only reaches it. Two ways:
+// official credential SDK (integrity/signature, issuer DID, expiry, revocation); this module only reaches it. Two ways:
 //   - child process (default when hosted with the Dockerfile): the API starts bin/pila-verifier on 127.0.0.1 with a
 //     random token, restarts it if it stops, and is the only thing that can call it;
 //   - PILA_VERIFIER_URL: a verifier running elsewhere (e.g. `go run .` in another terminal), with PILA_VERIFIER_TOKEN.

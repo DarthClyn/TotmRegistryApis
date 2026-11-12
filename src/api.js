@@ -305,8 +305,9 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
   });
 
   // ---------- PILA verification (X-Api-Key or X-Admin-Key) ----------
-  // Credentials not issued by TOTM: PILA's SDK (signature, issuer DID, expiry, revocation) + NDAKey's verification
-  // context (trusted issuer, live status), run by pila-verifier/. The credential is passed through, never stored.
+  // Credentials not issued by TOTM: PILA's official SDK (integrity/signature, issuer DID, expiry, revocation), run by
+  // pila-verifier/. Issuer trust and live status are PILA's own verification context API, called by the portal.
+  // The credential is passed through, never stored.
   const needPila = () => { if (!pila) throw new ApiError(503, 'E503', 'PILA verification is not available on this server'); };
   app.get('/api/v1/pila/health', { preHandler: requireAny }, async (req, reply) => {
     needPila();
@@ -328,7 +329,7 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     const passed = ['issuer', 'signature', 'expiration', 'revocation'].every((k) => c[k]?.passed || c[k]?.skipped);
     audited(req, 'pila.verify', passed ? 'ok' : 'fail', {
       vcId: b.id ?? null, issuerDid: b.issuer ?? null, format: b.format,
-      signature: c.signature?.passed ? 'pass' : 'fail', ndakey: b.ndakey?.status ?? (b.ndakey?.called ? 'error' : 'skipped'),
+      signature: c.signature?.passed ? 'pass' : 'fail', issuer: c.issuer?.passed ? 'pass' : 'fail',
     });
     return ok(b);
   });
