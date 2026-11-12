@@ -30,6 +30,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -208,6 +209,9 @@ func (s *server) verify(w http.ResponseWriter, r *http.Request) {
 	if contents, err := cred.GetContents(); err == nil {
 		fillSummary(&resp, contents)
 	}
+	if format == "jwt" {
+		fillFromJWTClaims(&resp, string(raw))
+	}
 
 	// 1. Issuer: can the issuer's DID be resolved?
 	if resp.Issuer == "" {
@@ -293,6 +297,46 @@ func fillSummary(resp *verifyResponse, contents []byte) {
 				}
 			}
 		}
+	}
+}
+
+// fillFromJWTClaims fills what the credential body leaves out from the JWT's registered claims, as the VC-JWT encoding
+// allows (iss = issuer, jti = id, sub = holder, nbf / exp = validity). The body always wins when it has a value.
+// Only the payload is read here; the signature is checked by the SDK.
+func fillFromJWTClaims(resp *verifyResponse, token string) {
+	parts := strings.Split(strings.SplitN(token, "~", 2)[0], ".")
+	if len(parts) < 2 {
+		return
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(parts[1], "="))
+	if err != nil {
+		return
+	}
+	var c map[string]any
+	if json.Unmarshal(payload, &c) != nil {
+		return
+	}
+	str := func(k string) string { v, _ := c[k].(string); return v }
+	when := func(k string) string {
+		if n, ok := c[k].(float64); ok && n > 0 {
+			return time.Unix(int64(n), 0).UTC().Format(time.RFC3339)
+		}
+		return ""
+	}
+	if resp.Issuer == "" {
+		resp.Issuer = str("iss")
+	}
+	if resp.ID == "" {
+		resp.ID = str("jti")
+	}
+	if resp.Holder == "" {
+		resp.Holder = str("sub")
+	}
+	if resp.ValidFrom == "" {
+		resp.ValidFrom = when("nbf")
+	}
+	if resp.ValidUntil == "" {
+		resp.ValidUntil = when("exp")
 	}
 }
 

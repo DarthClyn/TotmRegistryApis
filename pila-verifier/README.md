@@ -18,6 +18,12 @@ The API runs it for you as a child process on `127.0.0.1` (never exposed): the D
   public resolver; `did:key` locally.
 - **expiration / revocation** – `WithCheckExpiration()` / `WithCheckRevocation()` (when `credentialStatus` exists).
 
+The SDK verifies the token itself (it reads the issuer from `iss` / `kid`); nothing we read is given to it. The response
+also returns the credential's ID, issuer, holder and dates, which the portal needs to call PILA's verification context
+API. They come from the credential body (`GetContents`); for a VC-JWT whose body leaves them out, from the JWT's
+registered claims (`iss`, `jti`, `sub`, `nbf`, `exp`), as the VC-JWT encoding allows. The body wins when it has a value.
+The SDK has no getter for these claims, so this is the one thing read outside it. Tests: `go test ./...` (`claims_test.go`).
+
 | Variable | Default | |
 | --- | --- | --- |
 | `PILA_NDAKEY_URL` | `https://api-beta.ndakey.vn/service/api/v1` | public DID lookup; `off` uses PILA's resolver only |

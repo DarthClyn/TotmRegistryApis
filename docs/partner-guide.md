@@ -153,7 +153,7 @@ your own SDK cannot verify the TradeTrust proof. Nothing from the eLC is stored.
 
 To send a file to TOTM, call `POST /pila/send`; it lands in the TOTM inbox. Files TOTM sends you are in `GET /pila/inbox`.
 
-- Body: the raw file bytes. `Content-Type`: `application/json`, `application/pdf`, `image/png` or `image/jpeg`. Max 4 MB.
+- Body: the raw file bytes. `Content-Type`: `application/json`, `application/jwt` (a `.jwt` signed credential, sent as is), `application/pdf`, `image/png` or `image/jpeg`. Max 4 MB.
 - Query: `fileName` (required), `txId`, `vcId`, `note` (optional).
 - Files are kept for 30 days. Download returns the bytes with `X-File-Sha256`.
 - After processing a file, call `POST /pila/inbox/{fileId}/ack` so TOTM sees it arrived.

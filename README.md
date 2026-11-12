@@ -52,7 +52,7 @@ issuer DID / Tx ID given does not match the record). Accept an eLC only when `st
 PILA and TOTM send each other files. `POST /api/v1/totm/send` delivers to the PILA inbox, `POST /api/v1/pila/send`
 to the TOTM inbox. Either key (`X-Api-Key` or `X-Admin-Key`) can use both sides; only the admin key can delete.
 
-- Body: the raw file bytes, with `Content-Type` `application/json`, `application/pdf`, `image/png` or `image/jpeg`
+- Body: the raw file bytes, with `Content-Type` `application/json`, `application/jwt` (a `.jwt` signed credential; `application/vc+jwt` also accepted), `application/pdf`, `image/png` or `image/jpeg`
   (the content is checked against the type). Query: `fileName` (required), `txId`, `vcId`, `note` (optional).
 - Limits: `INBOX_MAX_MB` (default 4; Vercel caps request bodies at 4.5 MB) and `INBOX_TTL_DAYS` (default 30).
 - Storage: bytes in a private Vercel Blob store (`inbox/{to}/{fileId}`), records in Upstash Redis (expire with
@@ -76,7 +76,8 @@ resets. Files expire after `INBOX_TTL_DAYS`; their bytes are deleted from Blob t
 `POST /api/v1/pila/verify` runs **PILA's official SDK** ([go-credential-sdk](https://github.com/pilacorp/go-credential-sdk)
 v1.13.1) on credentials **not issued by TOTM** (PILA-issued eLCs, VC-JWTs, `did:nda` issuers): integrity/signature,
 issuer DID (NDAKey's public DID lookup, then PILA's resolver), expiry and revocation. No API key is needed and nothing
-is reimplemented. Issuer trust and live status are **not** done here: they come from PILA's own verification context
+is reimplemented. For a VC-JWT whose credential body has no issuer or ID, they are taken from the JWT claims
+(`iss`, `jti`, `sub`), so the portal can call PILA's verification context with them. Issuer trust and live status are **not** done here: they come from PILA's own verification context
 API (`POST /vp/verification-context` on NDAKey), which the portal calls with its NDAKey key.
 
 The Go code is `pila-verifier/`. The API starts it as a **child process on 127.0.0.1** with a random token per start

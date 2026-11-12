@@ -6,11 +6,15 @@ import { createHash, randomUUID } from 'node:crypto';
 /** Sending side -> receiving side. */
 export const SIDES = { pila: 'totm', totm: 'pila' };
 
+const isJwt = (b) => /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*(~[A-Za-z0-9_~.-]*)?$/.test(b.toString('utf8').trim());
 const TYPES = {
   'application/json': (b) => { try { JSON.parse(b.toString('utf8')); return true; } catch { return false; } },
   'application/pdf': (b) => b.subarray(0, 5).toString('latin1') === '%PDF-',
   'image/png': (b) => b.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47])),
   'image/jpeg': (b) => b.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])),
+  // A signed credential as a compact JWT (VC-JWT / SD-JWT), e.g. a .jwt file. Stored and returned exactly as sent.
+  'application/jwt': (b) => isJwt(b),
+  'application/vc+jwt': (b) => isJwt(b),
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const sha256 = (b) => createHash('sha256').update(b).digest('hex');

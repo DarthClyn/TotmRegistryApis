@@ -118,3 +118,16 @@ test('expired files drop out of the list and their bytes are deleted', async () 
   } finally { Date.now = realNow; }
   assert.equal(await files.get(`inbox/pila/${id}`), null);
 });
+
+test('a .jwt credential is accepted as application/jwt and downloaded byte for byte', async () => {
+  const { call } = setup();
+  const jwt = Buffer.from('eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJkaWQ6bmRhOnRlc3RuZXQ6MHgxIn0.c2lnbmF0dXJl\n');
+  const s = await send(call, 'pila', jwt, 'application/jwt', 'fileName=BETALC260001.jwt');
+  assert.equal(s.statusCode, 201);
+  assert.equal(s.json().data.contentType, 'application/jwt');
+  const d = await call('GET', `/api/v1/totm/inbox/${s.json().data.fileId}`, { admin: ADMIN_KEY });
+  assert.equal(d.headers['content-type'], 'application/jwt');
+  assert.ok(Buffer.from(d.rawPayload).equals(jwt));
+  assert.equal((await send(call, 'pila', jwt, 'application/vc+jwt', 'fileName=a.jwt')).statusCode, 201);
+  assert.equal((await send(call, 'pila', Buffer.from('not a token'), 'application/jwt', 'fileName=x.jwt')).statusCode, 400);
+});
