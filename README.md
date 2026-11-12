@@ -26,6 +26,8 @@ issuer DID, status and expiry per eLC.
 | POST | `/api/v1/admin/otps` | `X-Admin-Key` | One-time registration code for a partner's DID + email (24 h) |
 | GET / DELETE | `/api/v1/admin/partners[/{did}]` | `X-Admin-Key` | List partners / revoke one (its key stops working) |
 | POST | `/api/v1/admin/elc/issue` | `X-Admin-Key` | **Issuing API**: sign an eLC with the bank's key and register it (Tx ID, status active); returns the signed eLC |
+| POST | `/api/v1/admin/elc/send` | `X-Admin-Key` | **Send to the advising bank**: `{txId, vc}` → Bank Beta VN's inbox at PILA (`{txId, senderDid, vc, sentAt}`), after the same checks PILA makes (registered, same txId, active, advising BIC `BETAVNVX`, ≤ 1 MB) |
+| GET | `/api/v1/admin/elc/send/{txId}` | `X-Admin-Key` | PILA's verification result for a sent eLC (`PENDING` until PILA opens its result lookup) |
 | POST | `/api/v1/admin/vcs` | `X-Admin-Key` | Register an eLC issued elsewhere (creates the Tx ID, status active) |
 | GET | `/api/v1/admin/vcs` | `X-Admin-Key` | All eLC records, newest first (IDs, status, dates) + counts |
 | GET | `/api/v1/admin/vcs/{vcId}` | `X-Admin-Key` | One eLC record |

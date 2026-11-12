@@ -16,6 +16,8 @@ export const ELC_FIELDS = [
   'chargesClause', 'presentationPeriod', 'confirmationInstructions', 'specialPaymentConditionsBeneficiary',
   'specialPaymentConditionsReceivingBank', 'reimbursingBank', 'instructionsToBank', 'advisingBankName',
   'senderToReceiverInfo', 'requestedConfirmationParty',
+  // BICs of the issuing and advising banks (as in PILA's eLCs): the advising bank's inbox checks advisingBankBic.
+  'issuingBankBic', 'advisingBankBic',
 ];
 
 /** Names used in PILA's eLC samples, mapped to ours. */

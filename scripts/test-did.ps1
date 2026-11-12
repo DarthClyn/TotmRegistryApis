@@ -9,7 +9,7 @@ param(
     "did:nda:testnet:0x2ea525db609113e2efb306548f72f46ebd379871",  # Bank Beta, BETALC260001 (403 in the portal)
     "did:nda:testnet:0xe71963787f8d5e328cd12b7a78b0d26062e1f31e"   # earlier PILA eLC (worked)
   ),
-  [string]$NdaKey = "https://api-beta.ndakey.vn/service/api/v1",
+  [string]$NdaKey = "https://elc-beta.ndakey.vn/api/v1",
   [string]$Resolver = "https://api.ndadid.vn/api/v1/did"
 )
 if (-not $ApiKey) {

@@ -8,6 +8,7 @@ import { effectiveStatus } from './store.js';
 import { looksLikeW3cVc, verifyContent } from './verify.js';
 import { ElcInputError, normaliseElcData, signElc } from './elc.js';
 import { inboxRoutes } from './inbox.js';
+import { sendRoutes } from './send.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_VCS = 50;
@@ -31,7 +32,7 @@ const ok = (data) => ({ code: 'E00', message: 'Success', data });
  * @param {ReturnType<import('./files.js').memoryFiles>|null} [deps.files] inbox file bytes (Vercel Blob); null = inbox off
  * @param {{maxBytes?:number, ttlDays?:number}} [deps.inbox]
  */
-export function buildApp({ registry, store, partners = [], adminKeyHash, verifier, bankKeys = new Map(), signer, files = null, inbox = {}, pila = null, audit = (l) => console.log(JSON.stringify({ audit: l })), logger = false }) {
+export function buildApp({ registry, store, partners = [], adminKeyHash, verifier, bankKeys = new Map(), signer, files = null, inbox = {}, pila = null, pilaInbox = null, fetchImpl, audit = (l) => console.log(JSON.stringify({ audit: l })), logger = false }) {
   const app = Fastify({ logger, bodyLimit: 15 * 1024 * 1024, genReqId: () => randomUUID() });
 
   // X-Request-Id: the caller's UUID if valid, else a new one; always returned.
@@ -338,6 +339,9 @@ export function buildApp({ registry, store, partners = [], adminKeyHash, verifie
     });
     return ok(b);
   });
+
+  // ---------- Send an issued eLC to the advising bank's inbox (PILA) ----------
+  sendRoutes(app, { store, inbox: pilaInbox, requireAdmin, audited, ApiError, ok, bad, ...(fetchImpl ? { fetchImpl } : {}) });
 
   // ---------- Inbox (X-Api-Key or X-Admin-Key) ----------
   inboxRoutes(app, {

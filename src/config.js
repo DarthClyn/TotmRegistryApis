@@ -4,6 +4,7 @@ import { memoryStore, upstashStore } from './store.js';
 import { parseBankKeys } from './elc.js';
 import { memoryFiles, vercelBlobFiles } from './files.js';
 import { pilaVerifierFromEnv } from './pila.js';
+import { pilaInboxFromEnv } from './send.js';
 
 function parsePartners(raw) {
   if (!raw) return [];
@@ -41,6 +42,7 @@ export function loadConfig(env = process.env) {
     bankKeys: parseBankKeys(env.BANK_KEYS_JSON),
     files,
     pila: pilaVerifierFromEnv(env),
+    pilaInbox: pilaInboxFromEnv(env),
     inbox: { maxBytes: Number(env.INBOX_MAX_MB || 4) * 1024 * 1024, ttlDays: Number(env.INBOX_TTL_DAYS || 30) },
   };
 }

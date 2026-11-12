@@ -15,7 +15,7 @@ const app = buildApp({ ...config, audit, logger: { level: process.env.LOG_LEVEL 
 // Hosted platforms (Vercel, Railway, Render, Docker) route traffic to 0.0.0.0:$PORT; locally stay on 127.0.0.1.
 const hosted = !!(process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.RENDER);
 await app.listen({ port: config.port, host: process.env.HOST || (hosted ? '0.0.0.0' : '127.0.0.1') });
-app.log.info(`TOTM Trust API on :${config.port} · registry: ${config.registryKind} · store: ${config.store.kind} · inbox files: ${config.files?.kind ?? 'off'} · PILA verifier: ${config.pila?.kind ?? 'off'} · partners: ${config.partners.length}`);
+app.log.info(`TOTM Trust API on :${config.port} · registry: ${config.registryKind} · store: ${config.store.kind} · inbox files: ${config.files?.kind ?? 'off'} · PILA verifier: ${config.pila?.kind ?? 'off'} · send to: ${config.pilaInbox ? `${config.pilaInbox.name} (${config.pilaInbox.bic})` : 'off'} · partners: ${config.partners.length}`);
 // PILA verifier child process (bin/pila-verifier, built by the Dockerfile or `npm run pila:build`). Started after
 // listening so a slow start never delays the API; its routes answer 503 until it is ready.
 if (config.pila) {
